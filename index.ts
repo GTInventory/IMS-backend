@@ -1,9 +1,11 @@
 import * as express from 'express'
 import * as morgan from 'morgan'
+import * as bodyParser from 'body-parser'
 
 const app = express()
 
 app.use(morgan('combined')) // Apache log handler
+app.use(bodyParser.json())
 
 function sendError(res: express.Response, err: string, code?: number, debug?: any) {
     res.json({

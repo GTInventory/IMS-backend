@@ -2,8 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var express = require("express");
 var morgan = require("morgan");
+var bodyParser = require("body-parser");
 var app = express();
 app.use(morgan('combined')); // Apache log handler
+app.use(bodyParser.json());
 function sendError(res, err, code, debug) {
     res.json({
         'success': false,
