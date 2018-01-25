@@ -1,5 +1,8 @@
 import * as Sequelize from 'sequelize'
 
+/**
+ * Magical database class. Initializes Sequelize database layer and performs database operations.
+ */
 export default class Db {
     private sequelize: Sequelize.Sequelize
     // model types
@@ -8,20 +11,64 @@ export default class Db {
     private EquipmentType: Sequelize.Model<any, any>
     private Equipment: Sequelize.Model<any, any>
 
-    constructor() {
-        this.sequelize = new Sequelize(process.env.DATABASE_URL || '')
+    constructor(connString: string) {
+        this.sequelize = new Sequelize(connString)
         this._initializeModels()
-        this.sequelize.sync()
+        this.sequelize.sync().error((reason) => {
+            throw new Error('Database connection error: ' + reason)
+        })
     }
 
-    getAvailableEquipmentTypes() {
+    getAvailableEquipmentTypes = () =>
         this.EquipmentType.findAll({
             where: {
                 available: true
             },
             order: [['name', 'ASC']]
         })
-    }
+
+    getEquipmentTypesWithNameLike = (name: string) =>
+        this.EquipmentType.findAll({
+            where: {
+                name: {
+                    [Sequelize.Op.regexp]: '/.*' + name + '.*/'
+                }
+            }
+        })
+
+    getEquipmentTypeById = (id: number) =>
+        this.EquipmentType.findOne({
+            where: {
+                id
+            }
+        })
+
+    insertEquipmentType = (equipmentType: any) =>
+        this.EquipmentType.create(equipmentType)
+
+    getEquipmentAttributes = () =>
+        this.EquipmentAttribute.findAll({
+            order: [['name', 'ASC']]
+        })
+
+    getEquipmentAttributeById = (id: number) =>
+        this.EquipmentAttribute.findOne({
+            where: {
+                id
+            }
+        })
+
+    insertEquipmentAttribute = (equipmentAttribute: any) =>
+        this.EquipmentAttribute.create(equipmentAttribute)
+
+    updateEquipmentAttribute = (id: number, equipmentAttribute: any) =>
+        this.EquipmentAttribute.findOne({
+            where: {
+                id: id
+            }
+        }).then((old: any) => {
+            old.update(equipmentAttribute)
+        })
 
     private _initializeModels() {
         this.EquipmentAttribute = this.sequelize.define('equipment_attribute', {
@@ -32,13 +79,20 @@ export default class Db {
             },
             name: {
                 type: Sequelize.STRING,
-                unique: true
+                unique: true,
+                validate: {
+                    len: [2, 32],
+                    notEmpty: true
+                }
             },
             regex: Sequelize.STRING,
             required: Sequelize.BOOLEAN,
             unique: Sequelize.BOOLEAN,
             public: Sequelize.BOOLEAN,
-            helpText: Sequelize.STRING
+            helpText: {
+                type: Sequelize.STRING,
+                defaultValue: ""
+            }
         })
 
         this.EquipmentAttributeInstance = this.sequelize.define('equipment_attribute_instance', {
@@ -63,7 +117,13 @@ export default class Db {
                 primaryKey: true,
                 autoIncrement: true
             },
-            name: Sequelize.STRING,
+            name: {
+                type: Sequelize.STRING,
+                validate: {
+                    len: [2, 32],
+                    notEmpty: true
+                }
+            },
             nameAttribute: {
                 type: Sequelize.INTEGER,
                 references: {
@@ -71,7 +131,10 @@ export default class Db {
                     key: 'id'
                 }
             },
-            available: Sequelize.BOOLEAN
+            available: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: true
+            }
         })
 
         this.Equipment = this.sequelize.define('equipment', {

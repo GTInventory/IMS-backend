@@ -19,3 +19,5 @@ npm install
 Now you should be able to run ```tsc -w``` to regenerate the JS files in ```build/```. The ```.ts``` files are transpiled to JavaScript in ```build/``. 
 
 Use ```npm start``` to start running ```build/index.js```. 
+
+Note: the backend expects a PostgreSQL database connection URL to be present in the ```DATABASE_URL``` environment variable in order to establish a connection.
