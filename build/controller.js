@@ -9,7 +9,10 @@ var Controller = (function () {
         var _this = this;
         /// Attribute Operations
         this.getAttributes = function (req, res) {
-            return _this.db.getEquipmentAttributes().then(function (attributes) { return _this.sendResponse(res, attributes); });
+            if (req.params.q !== undefined)
+                _this.db.getEquipmentAttributesWithNameLike(req.params.q).then(function (attributes) { return _this.sendResponse(res, attributes); });
+            else
+                _this.db.getEquipmentAttributes().then(function (attributes) { return _this.sendResponse(res, attributes); });
         };
         this.getAttribute = function (req, res) {
             return _this.db.getEquipmentAttributeById(req.params.id).then(function (attribute) { return _this.sendResponse(res, attribute); });

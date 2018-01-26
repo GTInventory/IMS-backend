@@ -16,8 +16,10 @@ export default class Controller {
 
     /// Attribute Operations
 
-    getAttributes = (req: Request, res: Response) =>
-        this.db.getEquipmentAttributes().then((attributes) => this.sendResponse(res, attributes))
+    getAttributes = (req: Request, res: Response) => {
+        if (req.params.q !== undefined) this.db.getEquipmentAttributesWithNameLike(req.params.q).then((attributes) => this.sendResponse(res, attributes))
+        else this.db.getEquipmentAttributes().then((attributes) => this.sendResponse(res, attributes))
+    }
 
     getAttribute = (req: Request, res: Response) =>
         this.db.getEquipmentAttributeById(req.params.id).then((attribute) => this.sendResponse(res, attribute))

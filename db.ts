@@ -51,6 +51,15 @@ export default class Db {
             order: [['name', 'ASC']]
         })
 
+    getEquipmentAttributesWithNameLike = (name: string) =>
+        this.EquipmentAttribute.findAll({
+            where: {
+                name: {
+                    [Sequelize.Op.regexp]: '/.*' + name + '.*/'
+                }
+            }
+        })
+
     getEquipmentAttributeById = (id: number) =>
         this.EquipmentAttribute.findOne({
             where: {
@@ -152,7 +161,7 @@ export default class Db {
             }
         })
 
-        this.EquipmentAttribute.belongsToMany(this.EquipmentType, { through: 'equipment_m2m_attribute_type' });
-        this.Equipment.hasMany(this.EquipmentAttributeInstance, { as: 'Attributes' })
+        this.EquipmentAttribute.belongsToMany(this.EquipmentType, { through: 'equipment_m2m_attribute_type' })
+        this.Equipment.hasMany(this.EquipmentAttributeInstance, { as: 'attributes' })
     }
 }

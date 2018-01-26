@@ -40,6 +40,16 @@ var Db = (function () {
                 order: [['name', 'ASC']]
             });
         };
+        this.getEquipmentAttributesWithNameLike = function (name) {
+            return _this.EquipmentAttribute.findAll({
+                where: {
+                    name: (_a = {},
+                        _a[Sequelize.Op.regexp] = '/.*' + name + '.*/',
+                        _a)
+                }
+            });
+            var _a;
+        };
         this.getEquipmentAttributeById = function (id) {
             return _this.EquipmentAttribute.findOne({
                 where: {
@@ -144,7 +154,7 @@ var Db = (function () {
             }
         });
         this.EquipmentAttribute.belongsToMany(this.EquipmentType, { through: 'equipment_m2m_attribute_type' });
-        this.Equipment.hasMany(this.EquipmentAttributeInstance, { as: 'Attributes' });
+        this.Equipment.hasMany(this.EquipmentAttributeInstance, { as: 'attributes' });
     };
     return Db;
 }());
