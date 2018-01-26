@@ -26,7 +26,7 @@ Key | Type | Description
 `id` | `int` | Unique numerical identifier for this equipment type.
 `name` | `string` | 2-32 characters uniquely identifying this attribute.
 `nameAttribute` | `int` | The `id` of an `EquipmentAttribute` that will be used as the display value for `Equipment` having this `EquipmentType`.
-`available` | Is this type available for creating new `Equipment` instances?
+`available` | `bool` | Is this type available for creating new `Equipment` instances?
 
 ##### `EquipmentAttributeInstance`
 Key | Type | Description
