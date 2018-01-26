@@ -13,9 +13,9 @@ var controller = new controller_1.default(db);
 app.use(morgan('combined')); // Apache log handler
 app.use(bodyParser.json());
 app.get('/attribute', controller.getAttributes);
-app.get('/attribute/:id(\d+)', controller.getAttribute);
+app.get('/attribute/:id(\\d+)', controller.getAttribute);
 app.post('/attribute', controller.postAttribute);
 app.get('/type', controller.getTypes);
-app.get('/type/:id(\d+)', controller.getType);
+app.get('/type/:id(\\d+)', controller.getType);
 app.post('/type', controller.postType);
 app.listen(process.env.PORT || 8080, function () { return console.log('Listening on port ' + (process.env.PORT || 8080)); });

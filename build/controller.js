@@ -55,7 +55,7 @@ var Controller = (function () {
                 'success': false,
                 'error': err,
                 'debug': (process.env.DEBUG ? debug : undefined)
-            }).status(code ? code : 500);
+            }).status(code ? code : 500).end();
         };
         /**
          * JSONifies and attached a `success` attribute to an outgoing API response.

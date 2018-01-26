@@ -55,7 +55,7 @@ export default class Db {
         this.EquipmentAttribute.findAll({
             where: {
                 name: {
-                    [Sequelize.Op.regexp]: '/.*' + name + '.*/'
+                    [Sequelize.Op.like]: '%' + name + '%'
                 }
             }
         })
