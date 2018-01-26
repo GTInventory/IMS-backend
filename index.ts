@@ -12,6 +12,10 @@ const controller = new Controller(db)
 
 app.use(morgan('combined')) // Apache log handler
 app.use(bodyParser.json())
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*') // TODO: lock this down when we know where frontend will live
+    next()
+})
 
 app.get('/attribute', controller.getAttributes)
 app.get('/attribute/:id(\\d+)', controller.getAttribute)
