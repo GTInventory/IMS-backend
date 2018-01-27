@@ -14,6 +14,7 @@ Key | Type | Description
 --- | ---- | -----------
 `id` | `int` | Unique numerical identifier for this attribute.
 `name` | `string` | 2-32 characters uniquely identifying this attribute.
+`type` | `string` | One of `('Boolean','Currency','Integer','DateTime','String','Enum','Image','TextBox')`. Identifies the type of data that users may enter into this attribute.
 `regex` | `string` | A JS-compatible regex string to validate new instances of this attribute.
 `required` | `bool` | Do new instances of this attribute require a value for this attribute?
 `unique` | `bool` | Should new instances of this attribute be unique across all instances of this attribute?

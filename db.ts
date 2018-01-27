@@ -94,6 +94,9 @@ export default class Db {
                     notEmpty: true
                 }
             },
+            type: Sequelize.ENUM(
+                'Boolean', 'Currency', 'Integer', 'DateTime', 'String', 'Enum', 'Image', 'TextBox'
+            ),
             regex: Sequelize.STRING,
             required: Sequelize.BOOLEAN,
             unique: Sequelize.BOOLEAN,
