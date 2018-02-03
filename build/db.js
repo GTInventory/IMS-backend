@@ -11,8 +11,7 @@ var Db = (function () {
             return _this.Equipment.findAll({
                 where: {
                     deleted: false
-                },
-                order: [['name', 'ASC']]
+                }
             });
         };
         this.getItemById = function (id) {
@@ -20,8 +19,7 @@ var Db = (function () {
                 where: {
                     deleted: false,
                     id: id
-                },
-                order: [['name', 'ASC']]
+                }
             });
         };
         this.insertItem = function (item) {
@@ -191,6 +189,10 @@ var Db = (function () {
                     model: this.EquipmentType,
                     key: 'id'
                 }
+            },
+            deleted: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false
             }
         });
         this.EquipmentAttribute.belongsToMany(this.EquipmentType, { through: 'equipment_m2m_attribute_type' });

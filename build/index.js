@@ -28,4 +28,7 @@ app.get('/item', controller.getItems);
 app.get('/item/:id(\\d+)', controller.getItem);
 app.post('/item', controller.postItem);
 app.post('/item/:id(\\d+)', controller.updateItem);
+app.use(function (req, res, next) {
+    controller.sendNotFound(res);
+});
 app.listen(process.env.PORT || 8080, function () { return console.log('Listening on port ' + (process.env.PORT || 8080)); });

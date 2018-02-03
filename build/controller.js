@@ -83,6 +83,9 @@ var Controller = (function () {
                     .then(function (item) { res.redirect('/item/' + req.params.id); })
                     .catch(function (e) { return _this.sendError(res, 'Error updating item', 500, e); });
         };
+        this.sendNotFound = function (res) {
+            return _this.sendError(res, 'Resource not found', 404);
+        };
         /**
          * JSONifies and sends an error response.
          *
@@ -103,7 +106,7 @@ var Controller = (function () {
          */
         this.sendResponse = function (res, value) {
             if (!value)
-                _this.sendError(res, 'Resource not found.', 404);
+                _this.sendNotFound(res);
             else
                 res.json({
                     'success': true,

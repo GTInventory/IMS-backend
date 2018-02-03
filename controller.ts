@@ -87,6 +87,9 @@ export default class Controller {
             .catch((e) => this.sendError(res, 'Error updating item', 500, e))
     }
 
+    sendNotFound = (res: Response) =>
+        this.sendError(res, 'Resource not found', 404)
+
     /**
      * JSONifies and sends an error response.
      * 
@@ -106,7 +109,7 @@ export default class Controller {
      * If `value` is falsy, it will use `sendError` to send a 404 response back.
      */
     private sendResponse = (res: Response, value: any) => {
-        if (!value) this.sendError(res, 'Resource not found.', 404)
+        if (!value) this.sendNotFound(res)
         else res.json({
             'success': true,
             'result': value

@@ -24,8 +24,7 @@ export default class Db {
         this.Equipment.findAll({
             where: {
                 deleted: false
-            },
-            order: [['name', 'ASC']]
+            }
         })
 
     getItemById = (id: number) =>
@@ -33,8 +32,7 @@ export default class Db {
             where: {
                 deleted: false,
                 id
-            },
-            order: [['name', 'ASC']]
+            }
         })
 
     insertItem = (item: any) =>
@@ -201,6 +199,10 @@ export default class Db {
                     model: this.EquipmentType,
                     key: 'id'
                 }
+            },
+            deleted: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false
             }
         })
 
