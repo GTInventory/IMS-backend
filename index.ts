@@ -20,10 +20,17 @@ app.use((req, res, next) => {
 app.get('/attribute', controller.getAttributes)
 app.get('/attribute/:id(\\d+)', controller.getAttribute)
 app.post('/attribute', controller.postAttribute)
+app.post('/attribute/:id(\\d+)', controller.updateAttribute)
 
 app.get('/type', controller.getTypes)
 app.get('/type/:id(\\d+)', controller.getType)
 app.post('/type', controller.postType)
+app.post('/type/:id(\\d+)', controller.updateType)
+
+app.get('/item', controller.getItems)
+app.get('/item/:id(\\d+)', controller.getItem)
+app.post('/item', controller.postItem)
+app.post('/item/:id(\\d+)', controller.updateItem)
 
 app.listen(process.env.PORT || 8080,
     () => console.log('Listening on port ' + (process.env.PORT || 8080)))

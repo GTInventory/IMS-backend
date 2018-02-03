@@ -1,4 +1,5 @@
 import * as Sequelize from 'sequelize'
+import { text } from 'body-parser';
 
 /**
  * Magical database class. Initializes Sequelize database layer and performs database operations.
@@ -18,6 +19,36 @@ export default class Db {
             throw new Error('Database connection error: ' + reason)
         })
     }
+
+    getAllItems = () =>
+        this.Equipment.findAll({
+            where: {
+                deleted: false
+            },
+            order: [['name', 'ASC']]
+        })
+
+    getItemById = (id: number) =>
+        this.Equipment.findOne({
+            where: {
+                deleted: false,
+                id
+            },
+            order: [['name', 'ASC']]
+        })
+
+    insertItem = (item: any) =>
+        this.Equipment.create(item)
+
+    updateItem = (id: number, item: any) =>
+        this.Equipment.findOne({
+            where: {
+                id,
+                deleted: false
+            }
+        }).then((old: any) => {
+            old.update(item)
+        })
 
     getAvailableEquipmentTypes = () =>
         this.EquipmentType.findAll({
@@ -45,6 +76,15 @@ export default class Db {
 
     insertEquipmentType = (equipmentType: any) =>
         this.EquipmentType.create(equipmentType)
+
+    updateEquipmentType = (id: number, equipmentType: any) =>
+        this.EquipmentType.findOne({
+            where: {
+                id: id
+            }
+        }).then((old: any) => {
+            old.update(equipmentType)
+        })
 
     getEquipmentAttributes = () =>
         this.EquipmentAttribute.findAll({
@@ -95,7 +135,7 @@ export default class Db {
                 }
             },
             type: Sequelize.ENUM(
-                'Boolean', 'Currency', 'Integer', 'DateTime', 'String', 'Enum', 'Image', 'TextBox'
+                ['Boolean', 'Currency', 'Integer', 'DateTime', 'String', 'Enum', 'Image', 'TextBox']
             ),
             regex: Sequelize.STRING,
             required: Sequelize.BOOLEAN,

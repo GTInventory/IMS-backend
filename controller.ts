@@ -28,7 +28,14 @@ export default class Controller {
         if (!this.auth.has(Permission.AttributeAdd, req)) this.sendUnauthorized(res)
         else this.db.insertEquipmentAttribute(req.body)
             .then((attribute) => { res.redirect('/attribute/' + attribute.id) })
-            .error((e) => this.sendError(res, 'Error creating attribute.', 500, e))
+            .catch((e) => this.sendError(res, 'Error creating attribute.', 500, e))
+    }
+
+    updateAttribute = (req: Request, res: Response) => {
+        if (!this.auth.has(Permission.AttributeEdit, req)) this.sendUnauthorized(res)
+        else this.db.updateEquipmentAttribute(req.params.id, req.body)
+            .then((type) => { res.redirect('/attribute/' + req.params.id) })
+            .catch((e) => this.sendError(res, 'Error updating attribute', 500, e))
     }
 
     /// Type Operations
@@ -46,7 +53,38 @@ export default class Controller {
         if (!this.auth.has(Permission.TypeAdd, req)) this.sendUnauthorized(res)
         else this.db.insertEquipmentType(req.body)
             .then((type) => { res.redirect('/type/' + type.id) })
-            .error((e) => this.sendError(res, 'Error creating type', 500, e))
+            .catch((e) => this.sendError(res, 'Error creating type', 500, e))
+    }
+
+    updateType = (req: Request, res: Response) => {
+        if (!this.auth.has(Permission.TypeEdit, req)) this.sendUnauthorized(res)
+        else this.db.updateEquipmentType(req.params.id, req.body)
+            .then((type) => { res.redirect('/type/' + req.params.id) })
+            .catch((e) => this.sendError(res, 'Error updating type', 500, e))
+    }
+
+
+    /// Equipment/Item Operations
+
+    getItems = (req: Request, res: Response) => {
+        this.db.getAllItems().then((items) => this.sendResponse(res, items))
+    }
+
+    getItem = (req: Request, res: Response) =>
+        this.db.getItemById(req.params.id).then((item) => this.sendResponse(res, item))
+
+    postItem = (req: Request, res: Response) => {
+        if (!this.auth.has(Permission.ItemAdd, req)) this.sendUnauthorized(res)
+        else this.db.insertItem(req.body)
+            .then((item) => { res.redirect('/item/' + item.id) })
+            .catch((e) => this.sendError(res, 'Error creating item', 500, e))
+    }
+
+    updateItem = (req: Request, res: Response) => {
+        if (!this.auth.has(Permission.ItemEdit, req)) this.sendUnauthorized(res)
+        else this.db.updateItem(req.params.id, req.body)
+            .then((item) => { res.redirect('/item/' + req.params.id) })
+            .catch((e) => this.sendError(res, 'Error updating item', 500, e))
     }
 
     /**

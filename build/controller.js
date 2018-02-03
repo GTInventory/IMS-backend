@@ -23,7 +23,15 @@ var Controller = (function () {
             else
                 _this.db.insertEquipmentAttribute(req.body)
                     .then(function (attribute) { res.redirect('/attribute/' + attribute.id); })
-                    .error(function (e) { return _this.sendError(res, 'Error creating attribute.', 500, e); });
+                    .catch(function (e) { return _this.sendError(res, 'Error creating attribute.', 500, e); });
+        };
+        this.updateAttribute = function (req, res) {
+            if (!_this.auth.has(authorizer_1.Permission.AttributeEdit, req))
+                _this.sendUnauthorized(res);
+            else
+                _this.db.updateEquipmentAttribute(req.params.id, req.body)
+                    .then(function (type) { res.redirect('/attribute/' + req.params.id); })
+                    .catch(function (e) { return _this.sendError(res, 'Error updating attribute', 500, e); });
         };
         /// Type Operations
         // TODO: modify so some people can see unavailable equipment types?
@@ -42,7 +50,38 @@ var Controller = (function () {
             else
                 _this.db.insertEquipmentType(req.body)
                     .then(function (type) { res.redirect('/type/' + type.id); })
-                    .error(function (e) { return _this.sendError(res, 'Error creating type', 500, e); });
+                    .catch(function (e) { return _this.sendError(res, 'Error creating type', 500, e); });
+        };
+        this.updateType = function (req, res) {
+            if (!_this.auth.has(authorizer_1.Permission.TypeEdit, req))
+                _this.sendUnauthorized(res);
+            else
+                _this.db.updateEquipmentType(req.params.id, req.body)
+                    .then(function (type) { res.redirect('/type/' + req.params.id); })
+                    .catch(function (e) { return _this.sendError(res, 'Error updating type', 500, e); });
+        };
+        /// Equipment/Item Operations
+        this.getItems = function (req, res) {
+            _this.db.getAllItems().then(function (items) { return _this.sendResponse(res, items); });
+        };
+        this.getItem = function (req, res) {
+            return _this.db.getItemById(req.params.id).then(function (item) { return _this.sendResponse(res, item); });
+        };
+        this.postItem = function (req, res) {
+            if (!_this.auth.has(authorizer_1.Permission.ItemAdd, req))
+                _this.sendUnauthorized(res);
+            else
+                _this.db.insertItem(req.body)
+                    .then(function (item) { res.redirect('/item/' + item.id); })
+                    .catch(function (e) { return _this.sendError(res, 'Error creating item', 500, e); });
+        };
+        this.updateItem = function (req, res) {
+            if (!_this.auth.has(authorizer_1.Permission.ItemEdit, req))
+                _this.sendUnauthorized(res);
+            else
+                _this.db.updateItem(req.params.id, req.body)
+                    .then(function (item) { res.redirect('/item/' + req.params.id); })
+                    .catch(function (e) { return _this.sendError(res, 'Error updating item', 500, e); });
         };
         /**
          * JSONifies and sends an error response.

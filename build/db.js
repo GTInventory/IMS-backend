@@ -7,6 +7,36 @@ var Sequelize = require("sequelize");
 var Db = (function () {
     function Db(connString) {
         var _this = this;
+        this.getAllItems = function () {
+            return _this.Equipment.findAll({
+                where: {
+                    deleted: false
+                },
+                order: [['name', 'ASC']]
+            });
+        };
+        this.getItemById = function (id) {
+            return _this.Equipment.findOne({
+                where: {
+                    deleted: false,
+                    id: id
+                },
+                order: [['name', 'ASC']]
+            });
+        };
+        this.insertItem = function (item) {
+            return _this.Equipment.create(item);
+        };
+        this.updateItem = function (id, item) {
+            return _this.Equipment.findOne({
+                where: {
+                    id: id,
+                    deleted: false
+                }
+            }).then(function (old) {
+                old.update(item);
+            });
+        };
         this.getAvailableEquipmentTypes = function () {
             return _this.EquipmentType.findAll({
                 where: {
@@ -34,6 +64,15 @@ var Db = (function () {
         };
         this.insertEquipmentType = function (equipmentType) {
             return _this.EquipmentType.create(equipmentType);
+        };
+        this.updateEquipmentType = function (id, equipmentType) {
+            return _this.EquipmentType.findOne({
+                where: {
+                    id: id
+                }
+            }).then(function (old) {
+                old.update(equipmentType);
+            });
         };
         this.getEquipmentAttributes = function () {
             return _this.EquipmentAttribute.findAll({
@@ -90,7 +129,7 @@ var Db = (function () {
                     notEmpty: true
                 }
             },
-            type: Sequelize.ENUM('Boolean', 'Currency', 'Integer', 'DateTime', 'String', 'Enum', 'Image', 'TextBox'),
+            type: Sequelize.ENUM(['Boolean', 'Currency', 'Integer', 'DateTime', 'String', 'Enum', 'Image', 'TextBox']),
             regex: Sequelize.STRING,
             required: Sequelize.BOOLEAN,
             unique: Sequelize.BOOLEAN,
