@@ -7,6 +7,8 @@ Backend services for the GT Inventory Management System.
 
 The test API is available at https://ims-backend.mybluemix.net/. All requests are JSON-based.
 
+The API is documented at https://documenter.getpostman.com/view/920629/ims-backend/7TT7pKy.
+
 #### Data Types
 
 ##### `EquipmentAttribute`
@@ -43,29 +45,6 @@ Key | Type | Description
 `type` | `int` | The `EquipmentType` this equipment belongs to.
 `attributes` | `EquipmentAttributeInstance[]` | All the current attributes and their values belonging to this `Equipment`.
 
-
-#### Attribute Endpoints
-
-##### Search Attributes
-```GET /attribute```
-
-```GET /attribute?q=name```
-
-If the optional URL parameter `q` is supplied, it will search the database for names matching `q`.
-
-Returns a list of `EquipmentAttribute` as the `result`.
-
-##### Get 1 Attribute
-```GET /attribute/:id```
-
-Returns the `EquipmentAttribute` with `id` as `result`.
-
-##### Create Attribute
-```POST /attribute```
-
-Send a JSON-encoded `EquipmentAttribute` object as the POST body to create a new attribute.
-
-Redirects to the new attribute on success or returns an error on failure.
 
 ### Contributing
 
