@@ -4,7 +4,7 @@ var authorizer_1 = require("./authorizer");
 /**
  * Fulfills incoming router requests.
  */
-var Controller = (function () {
+var Controller = /** @class */ (function () {
     function Controller(db) {
         var _this = this;
         /// Attribute Operations

@@ -4,7 +4,7 @@ var Sequelize = require("sequelize");
 /**
  * Magical database class. Initializes Sequelize database layer and performs database operations.
  */
-var Db = (function () {
+var Db = /** @class */ (function () {
     function Db(connString) {
         var _this = this;
         this.getAllItems = function () {

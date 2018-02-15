@@ -14,6 +14,7 @@ app.use(morgan('combined')); // Apache log handler
 app.use(bodyParser.json());
 app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Origin', '*'); // TODO: lock this down when we know where frontend will live
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
     next();
 });
 app.get('/attribute', controller.getAttributes);

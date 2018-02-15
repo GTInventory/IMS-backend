@@ -9,7 +9,7 @@ var Permission;
     Permission[Permission["ItemAdd"] = 4] = "ItemAdd";
     Permission[Permission["ItemEdit"] = 5] = "ItemEdit";
 })(Permission = exports.Permission || (exports.Permission = {}));
-var Authorizer = (function () {
+var Authorizer = /** @class */ (function () {
     function Authorizer() {
     }
     /**
