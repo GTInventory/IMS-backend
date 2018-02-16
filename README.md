@@ -55,7 +55,7 @@ npm install -g typescript
 npm install
 ```
 
-Now you should be able to run ```tsc -w``` to regenerate the JS files in ```build/```. The ```.ts``` files are transpiled to JavaScript in ```build/``. 
+Now you should be able to run ```tsc -w``` to regenerate the JS files in ```build/```. The ```.ts``` files are transpiled to JavaScript in ```build/```. 
 
 Use ```npm start``` to start running ```build/index.js```. 
 
