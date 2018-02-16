@@ -8,14 +8,14 @@ var Db = /** @class */ (function () {
     function Db(connString) {
         var _this = this;
         this.getAllItems = function () {
-            return _this.Equipment.findAll({
+            return _this.Item.findAll({
                 where: {
                     deleted: false
                 }
             });
         };
         this.getItemById = function (id) {
-            return _this.Equipment.findOne({
+            return _this.Item.findOne({
                 where: {
                     deleted: false,
                     id: id
@@ -23,10 +23,10 @@ var Db = /** @class */ (function () {
             });
         };
         this.insertItem = function (item) {
-            return _this.Equipment.create(item);
+            return _this.Item.create(item);
         };
         this.updateItem = function (id, item) {
-            return _this.Equipment.findOne({
+            return _this.Item.findOne({
                 where: {
                     id: id,
                     deleted: false
@@ -35,16 +35,16 @@ var Db = /** @class */ (function () {
                 old.update(item);
             });
         };
-        this.getAvailableEquipmentTypes = function () {
-            return _this.EquipmentType.findAll({
+        this.getAvailableTypes = function () {
+            return _this.Type.findAll({
                 where: {
                     available: true
                 },
                 order: [['name', 'ASC']]
             });
         };
-        this.getEquipmentTypesWithNameLike = function (name) {
-            return _this.EquipmentType.findAll({
+        this.getTypesWithNameLike = function (name) {
+            return _this.Type.findAll({
                 where: {
                     name: (_a = {},
                         _a[Sequelize.Op.regexp] = '/.*' + name + '.*/',
@@ -53,32 +53,32 @@ var Db = /** @class */ (function () {
             });
             var _a;
         };
-        this.getEquipmentTypeById = function (id) {
-            return _this.EquipmentType.findOne({
+        this.getTypeById = function (id) {
+            return _this.Type.findOne({
                 where: {
                     id: id
                 }
             });
         };
-        this.insertEquipmentType = function (equipmentType) {
-            return _this.EquipmentType.create(equipmentType);
+        this.insertType = function (type) {
+            return _this.Type.create(type);
         };
-        this.updateEquipmentType = function (id, equipmentType) {
-            return _this.EquipmentType.findOne({
+        this.updateType = function (id, type) {
+            return _this.Type.findOne({
                 where: {
                     id: id
                 }
             }).then(function (old) {
-                old.update(equipmentType);
+                old.update(type);
             });
         };
-        this.getEquipmentAttributes = function () {
-            return _this.EquipmentAttribute.findAll({
+        this.getAttributes = function () {
+            return _this.Attribute.findAll({
                 order: [['name', 'ASC']]
             });
         };
-        this.getEquipmentAttributesWithNameLike = function (name) {
-            return _this.EquipmentAttribute.findAll({
+        this.getAttributesWithNameLike = function (name) {
+            return _this.Attribute.findAll({
                 where: {
                     name: (_a = {},
                         _a[Sequelize.Op.like] = '%' + name + '%',
@@ -87,23 +87,23 @@ var Db = /** @class */ (function () {
             });
             var _a;
         };
-        this.getEquipmentAttributeById = function (id) {
-            return _this.EquipmentAttribute.findOne({
+        this.getAttributeById = function (id) {
+            return _this.Attribute.findOne({
                 where: {
                     id: id
                 }
             });
         };
-        this.insertEquipmentAttribute = function (equipmentAttribute) {
-            return _this.EquipmentAttribute.create(equipmentAttribute);
+        this.insertAttribute = function (attribute) {
+            return _this.Attribute.create(attribute);
         };
-        this.updateEquipmentAttribute = function (id, equipmentAttribute) {
-            return _this.EquipmentAttribute.findOne({
+        this.updateAttribute = function (id, attribute) {
+            return _this.Attribute.findOne({
                 where: {
                     id: id
                 }
             }).then(function (old) {
-                old.update(equipmentAttribute);
+                old.update(attribute);
             });
         };
         this.sequelize = new Sequelize(connString);
@@ -113,7 +113,7 @@ var Db = /** @class */ (function () {
         });
     }
     Db.prototype._initializeModels = function () {
-        this.EquipmentAttribute = this.sequelize.define('equipment_attribute', {
+        this.Attribute = this.sequelize.define('attribute', {
             id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -137,7 +137,7 @@ var Db = /** @class */ (function () {
                 defaultValue: ""
             }
         });
-        this.EquipmentAttributeInstance = this.sequelize.define('equipment_attribute_instance', {
+        this.AttributeInstance = this.sequelize.define('attributeInstance', {
             id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -146,13 +146,13 @@ var Db = /** @class */ (function () {
             attribute: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: this.EquipmentAttribute,
+                    model: this.Attribute,
                     key: 'id'
                 }
             },
             value: Sequelize.STRING,
         });
-        this.EquipmentType = this.sequelize.define('equipment_type', {
+        this.Type = this.sequelize.define('type', {
             id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -168,7 +168,7 @@ var Db = /** @class */ (function () {
             nameAttribute: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: this.EquipmentAttribute,
+                    model: this.Attribute,
                     key: 'id'
                 }
             },
@@ -177,7 +177,7 @@ var Db = /** @class */ (function () {
                 defaultValue: true
             }
         });
-        this.Equipment = this.sequelize.define('equipment', {
+        this.Item = this.sequelize.define('item', {
             id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -186,7 +186,7 @@ var Db = /** @class */ (function () {
             type: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: this.EquipmentType,
+                    model: this.Type,
                     key: 'id'
                 }
             },
@@ -195,8 +195,15 @@ var Db = /** @class */ (function () {
                 defaultValue: false
             }
         });
-        this.EquipmentAttribute.belongsToMany(this.EquipmentType, { through: 'equipment_m2m_attribute_type' });
-        this.Equipment.hasMany(this.EquipmentAttributeInstance, { as: 'attributes' });
+        this.Attribute.belongsToMany(this.Type, {
+            through: 'equipment_m2m_attribute_type',
+            as: 'types'
+        });
+        this.Type.belongsToMany(this.Attribute, {
+            through: 'equipment_m2m_attribute_type',
+            as: 'attributes'
+        });
+        this.Item.hasMany(this.AttributeInstance, { as: 'attributes' });
     };
     return Db;
 }());

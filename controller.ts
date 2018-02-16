@@ -17,23 +17,23 @@ export default class Controller {
     /// Attribute Operations
 
     getAttributes = (req: Request, res: Response) => {
-        if (req.params.q !== undefined) this.db.getEquipmentAttributesWithNameLike(req.params.q).then((attributes) => this.sendResponse(res, attributes))
-        else this.db.getEquipmentAttributes().then((attributes) => this.sendResponse(res, attributes))
+        if (req.params.q !== undefined) this.db.getAttributesWithNameLike(req.params.q).then((attributes) => this.sendResponse(res, attributes))
+        else this.db.getAttributes().then((attributes) => this.sendResponse(res, attributes))
     }
 
     getAttribute = (req: Request, res: Response) =>
-        this.db.getEquipmentAttributeById(req.params.id).then((attribute) => this.sendResponse(res, attribute))
+        this.db.getAttributeById(req.params.id).then((attribute) => this.sendResponse(res, attribute))
 
     postAttribute = (req: Request, res: Response) => {
         if (!this.auth.has(Permission.AttributeAdd, req)) this.sendUnauthorized(res)
-        else this.db.insertEquipmentAttribute(req.body)
+        else this.db.insertAttribute(req.body)
             .then((attribute) => { res.redirect('/attribute/' + attribute.id) })
             .catch((e) => this.sendError(res, 'Error creating attribute.', 500, e))
     }
 
     updateAttribute = (req: Request, res: Response) => {
         if (!this.auth.has(Permission.AttributeEdit, req)) this.sendUnauthorized(res)
-        else this.db.updateEquipmentAttribute(req.params.id, req.body)
+        else this.db.updateAttribute(req.params.id, req.body)
             .then((type) => { res.redirect('/attribute/' + req.params.id) })
             .catch((e) => this.sendError(res, 'Error updating attribute', 500, e))
     }
@@ -42,23 +42,25 @@ export default class Controller {
 
     // TODO: modify so some people can see unavailable equipment types?
     getTypes = (req: Request, res: Response) => {
-        if (req.params.q !== undefined) this.db.getEquipmentTypesWithNameLike(req.params.q).then((types) => this.sendResponse(res, types))
-        else this.db.getAvailableEquipmentTypes().then((types) => this.sendResponse(res, types))
+        if (req.params.q !== undefined) this.db.getTypesWithNameLike(req.params.q).then((types) => this.sendResponse(res, types))
+        else this.db.getAvailableTypes().then((types) => this.sendResponse(res, types))
     }
 
     getType = (req: Request, res: Response) =>
-        this.db.getEquipmentTypeById(req.params.id).then((type) => this.sendResponse(res, type))
+        this.db.getTypeById(req.params.id).then((type) => {
+            this.sendResponse(res, type)
+        })
 
     postType = (req: Request, res: Response) => {
         if (!this.auth.has(Permission.TypeAdd, req)) this.sendUnauthorized(res)
-        else this.db.insertEquipmentType(req.body)
+        else this.db.insertType(req.body)
             .then((type) => { res.redirect('/type/' + type.id) })
             .catch((e) => this.sendError(res, 'Error creating type', 500, e))
     }
 
     updateType = (req: Request, res: Response) => {
         if (!this.auth.has(Permission.TypeEdit, req)) this.sendUnauthorized(res)
-        else this.db.updateEquipmentType(req.params.id, req.body)
+        else this.db.updateType(req.params.id, req.body)
             .then((type) => { res.redirect('/type/' + req.params.id) })
             .catch((e) => this.sendError(res, 'Error updating type', 500, e))
     }

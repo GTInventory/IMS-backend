@@ -7,10 +7,10 @@ import { text } from 'body-parser';
 export default class Db {
     private sequelize: Sequelize.Sequelize
     // model types
-    private EquipmentAttributeInstance: Sequelize.Model<any, any>
-    private EquipmentAttribute: Sequelize.Model<any, any>
-    private EquipmentType: Sequelize.Model<any, any>
-    private Equipment: Sequelize.Model<any, any>
+    private AttributeInstance: Sequelize.Model<any, any>
+    private Attribute: Sequelize.Model<any, any>
+    private Type: Sequelize.Model<any, any>
+    private Item: Sequelize.Model<any, any>
 
     constructor(connString: string) {
         this.sequelize = new Sequelize(connString)
@@ -21,14 +21,14 @@ export default class Db {
     }
 
     getAllItems = () =>
-        this.Equipment.findAll({
+        this.Item.findAll({
             where: {
                 deleted: false
             }
         })
 
     getItemById = (id: number) =>
-        this.Equipment.findOne({
+        this.Item.findOne({
             where: {
                 deleted: false,
                 id
@@ -36,10 +36,10 @@ export default class Db {
         })
 
     insertItem = (item: any) =>
-        this.Equipment.create(item)
+        this.Item.create(item)
 
     updateItem = (id: number, item: any) =>
-        this.Equipment.findOne({
+        this.Item.findOne({
             where: {
                 id,
                 deleted: false
@@ -48,16 +48,16 @@ export default class Db {
             old.update(item)
         })
 
-    getAvailableEquipmentTypes = () =>
-        this.EquipmentType.findAll({
+    getAvailableTypes = () =>
+        this.Type.findAll({
             where: {
                 available: true
             },
             order: [['name', 'ASC']]
         })
 
-    getEquipmentTypesWithNameLike = (name: string) =>
-        this.EquipmentType.findAll({
+    getTypesWithNameLike = (name: string) =>
+        this.Type.findAll({
             where: {
                 name: {
                     [Sequelize.Op.regexp]: '/.*' + name + '.*/'
@@ -65,32 +65,32 @@ export default class Db {
             }
         })
 
-    getEquipmentTypeById = (id: number) =>
-        this.EquipmentType.findOne({
+    getTypeById = (id: number) =>
+        this.Type.findOne({
             where: {
                 id
             }
         })
 
-    insertEquipmentType = (equipmentType: any) =>
-        this.EquipmentType.create(equipmentType)
+    insertType = (type: any) =>
+        this.Type.create(type)
 
-    updateEquipmentType = (id: number, equipmentType: any) =>
-        this.EquipmentType.findOne({
+    updateType = (id: number, type: any) =>
+        this.Type.findOne({
             where: {
                 id: id
             }
         }).then((old: any) => {
-            old.update(equipmentType)
+            old.update(type)
         })
 
-    getEquipmentAttributes = () =>
-        this.EquipmentAttribute.findAll({
+    getAttributes = () =>
+        this.Attribute.findAll({
             order: [['name', 'ASC']]
         })
 
-    getEquipmentAttributesWithNameLike = (name: string) =>
-        this.EquipmentAttribute.findAll({
+    getAttributesWithNameLike = (name: string) =>
+        this.Attribute.findAll({
             where: {
                 name: {
                     [Sequelize.Op.like]: '%' + name + '%'
@@ -98,27 +98,27 @@ export default class Db {
             }
         })
 
-    getEquipmentAttributeById = (id: number) =>
-        this.EquipmentAttribute.findOne({
+    getAttributeById = (id: number) =>
+        this.Attribute.findOne({
             where: {
                 id
             }
         })
 
-    insertEquipmentAttribute = (equipmentAttribute: any) =>
-        this.EquipmentAttribute.create(equipmentAttribute)
+    insertAttribute = (attribute: any) =>
+        this.Attribute.create(attribute)
 
-    updateEquipmentAttribute = (id: number, equipmentAttribute: any) =>
-        this.EquipmentAttribute.findOne({
+    updateAttribute = (id: number, attribute: any) =>
+        this.Attribute.findOne({
             where: {
                 id: id
             }
         }).then((old: any) => {
-            old.update(equipmentAttribute)
+            old.update(attribute)
         })
 
     private _initializeModels() {
-        this.EquipmentAttribute = this.sequelize.define('equipment_attribute', {
+        this.Attribute = this.sequelize.define('attribute', {
             id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -145,7 +145,7 @@ export default class Db {
             }
         })
 
-        this.EquipmentAttributeInstance = this.sequelize.define('equipment_attribute_instance', {
+        this.AttributeInstance = this.sequelize.define('attributeInstance', {
             id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -154,14 +154,14 @@ export default class Db {
             attribute: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: this.EquipmentAttribute,
+                    model: this.Attribute,
                     key: 'id'
                 }
             },
             value: Sequelize.STRING,
         });
 
-        this.EquipmentType = this.sequelize.define('equipment_type', {
+        this.Type = this.sequelize.define('type', {
             id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -177,7 +177,7 @@ export default class Db {
             nameAttribute: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: this.EquipmentAttribute,
+                    model: this.Attribute,
                     key: 'id'
                 }
             },
@@ -187,7 +187,7 @@ export default class Db {
             }
         })
 
-        this.Equipment = this.sequelize.define('equipment', {
+        this.Item = this.sequelize.define('item', {
             id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -196,7 +196,7 @@ export default class Db {
             type: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: this.EquipmentType,
+                    model: this.Type,
                     key: 'id'
                 }
             },
@@ -206,7 +206,14 @@ export default class Db {
             }
         })
 
-        this.EquipmentAttribute.belongsToMany(this.EquipmentType, { through: 'equipment_m2m_attribute_type' })
-        this.Equipment.hasMany(this.EquipmentAttributeInstance, { as: 'attributes' })
+        this.Attribute.belongsToMany(this.Type, { 
+            through: 'equipment_m2m_attribute_type',
+            as: 'types'
+        })
+        this.Type.belongsToMany(this.Attribute, { 
+            through: 'equipment_m2m_attribute_type',
+            as: 'attributes'
+        })
+        this.Item.hasMany(this.AttributeInstance, { as: 'attributes' })
     }
 }

@@ -10,18 +10,18 @@ var Controller = /** @class */ (function () {
         /// Attribute Operations
         this.getAttributes = function (req, res) {
             if (req.params.q !== undefined)
-                _this.db.getEquipmentAttributesWithNameLike(req.params.q).then(function (attributes) { return _this.sendResponse(res, attributes); });
+                _this.db.getAttributesWithNameLike(req.params.q).then(function (attributes) { return _this.sendResponse(res, attributes); });
             else
-                _this.db.getEquipmentAttributes().then(function (attributes) { return _this.sendResponse(res, attributes); });
+                _this.db.getAttributes().then(function (attributes) { return _this.sendResponse(res, attributes); });
         };
         this.getAttribute = function (req, res) {
-            return _this.db.getEquipmentAttributeById(req.params.id).then(function (attribute) { return _this.sendResponse(res, attribute); });
+            return _this.db.getAttributeById(req.params.id).then(function (attribute) { return _this.sendResponse(res, attribute); });
         };
         this.postAttribute = function (req, res) {
             if (!_this.auth.has(authorizer_1.Permission.AttributeAdd, req))
                 _this.sendUnauthorized(res);
             else
-                _this.db.insertEquipmentAttribute(req.body)
+                _this.db.insertAttribute(req.body)
                     .then(function (attribute) { res.redirect('/attribute/' + attribute.id); })
                     .catch(function (e) { return _this.sendError(res, 'Error creating attribute.', 500, e); });
         };
@@ -29,7 +29,7 @@ var Controller = /** @class */ (function () {
             if (!_this.auth.has(authorizer_1.Permission.AttributeEdit, req))
                 _this.sendUnauthorized(res);
             else
-                _this.db.updateEquipmentAttribute(req.params.id, req.body)
+                _this.db.updateAttribute(req.params.id, req.body)
                     .then(function (type) { res.redirect('/attribute/' + req.params.id); })
                     .catch(function (e) { return _this.sendError(res, 'Error updating attribute', 500, e); });
         };
@@ -37,18 +37,20 @@ var Controller = /** @class */ (function () {
         // TODO: modify so some people can see unavailable equipment types?
         this.getTypes = function (req, res) {
             if (req.params.q !== undefined)
-                _this.db.getEquipmentTypesWithNameLike(req.params.q).then(function (types) { return _this.sendResponse(res, types); });
+                _this.db.getTypesWithNameLike(req.params.q).then(function (types) { return _this.sendResponse(res, types); });
             else
-                _this.db.getAvailableEquipmentTypes().then(function (types) { return _this.sendResponse(res, types); });
+                _this.db.getAvailableTypes().then(function (types) { return _this.sendResponse(res, types); });
         };
         this.getType = function (req, res) {
-            return _this.db.getEquipmentTypeById(req.params.id).then(function (type) { return _this.sendResponse(res, type); });
+            return _this.db.getTypeById(req.params.id).then(function (type) {
+                _this.sendResponse(res, type);
+            });
         };
         this.postType = function (req, res) {
             if (!_this.auth.has(authorizer_1.Permission.TypeAdd, req))
                 _this.sendUnauthorized(res);
             else
-                _this.db.insertEquipmentType(req.body)
+                _this.db.insertType(req.body)
                     .then(function (type) { res.redirect('/type/' + type.id); })
                     .catch(function (e) { return _this.sendError(res, 'Error creating type', 500, e); });
         };
@@ -56,7 +58,7 @@ var Controller = /** @class */ (function () {
             if (!_this.auth.has(authorizer_1.Permission.TypeEdit, req))
                 _this.sendUnauthorized(res);
             else
-                _this.db.updateEquipmentType(req.params.id, req.body)
+                _this.db.updateType(req.params.id, req.body)
                     .then(function (type) { res.redirect('/type/' + req.params.id); })
                     .catch(function (e) { return _this.sendError(res, 'Error updating type', 500, e); });
         };
