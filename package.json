@@ -4,7 +4,8 @@
   "description": "",
   "main": "./build/index.js",
   "scripts": {
-    "start": "node ./build/index.js"
+    "start": "node ./build/index.js",
+    "watch": "tsc -w --sourceMap"
   },
   "repository": {
     "type": "git",

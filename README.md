@@ -59,4 +59,6 @@ Now you should be able to run ```tsc -w``` to regenerate the JS files in ```buil
 
 Use ```npm start``` to start running ```build/index.js```. 
 
+Use ```npm run-script watch``` to get TypeScript to transpile your .ts files automatically when they change.
+
 Note: the backend expects a PostgreSQL database connection URL to be present in the ```DATABASE_URL``` environment variable in order to establish a connection.

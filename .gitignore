@@ -9,3 +9,5 @@
 !.elasticbeanstalk/*.global.yml
 
 node_modules/*
+
+build/**/*.js.map
