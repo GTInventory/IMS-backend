@@ -7,7 +7,7 @@ Backend services for the GT Inventory Management System.
 
 The test API is available at https://ims-backend.mybluemix.net/. All requests are JSON-based.
 
-The API is documented at https://documenter.getpostman.com/view/920629/ims-backend/7TT7pKy.
+The API is documented at https://documenter.getpostman.com/view/3796309/ims-backend/RVg2B95p.
 
 #### Data Types
 
