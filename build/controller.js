@@ -10,8 +10,8 @@ var Controller = /** @class */ (function () {
         var _this = this;
         /// Attribute Operations
         this.getAttributes = function (req, res) {
-            if (req.params.q !== undefined)
-                _this.db.getAttributesWithNameLike(req.params.q).then(function (attributes) { return _this.sendResponse(res, attributes); });
+            if (req.query.q !== undefined)
+                _this.db.getAttributesWithNameLike(req.query.q).then(function (attributes) { return _this.sendResponse(res, attributes); });
             else
                 _this.db.getAttributes().then(function (attributes) { return _this.sendResponse(res, attributes); });
         };
@@ -37,8 +37,8 @@ var Controller = /** @class */ (function () {
         /// Type Operations
         // TODO: modify so some people can see unavailable equipment types?
         this.getTypes = function (req, res) {
-            if (req.params.q !== undefined)
-                _this.db.getTypesWithNameLike(req.params.q).then(function (types) { return _this.sendResponse(res, types); });
+            if (req.query.q !== undefined)
+                _this.db.getTypesWithNameLike(req.query.q).then(function (types) { return _this.sendResponse(res, types); });
             else
                 _this.db.getAvailableTypes().then(function (types) { return _this.sendResponse(res, types); });
         };

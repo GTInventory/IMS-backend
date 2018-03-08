@@ -72,7 +72,7 @@ export default class Db {
         this.Type.findAll({
             where: {
                 name: {
-                    [Sequelize.Op.regexp]: '/.*' + name + '.*/'
+                    [Sequelize.Op.like]: '%' + name + '%'
                 },
                 available: true
             },

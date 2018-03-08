@@ -18,7 +18,7 @@ export default class Controller {
     /// Attribute Operations
 
     getAttributes = (req: Request, res: Response) => {
-        if (req.params.q !== undefined) this.db.getAttributesWithNameLike(req.params.q).then((attributes) => this.sendResponse(res, attributes))
+        if (req.query.q !== undefined) this.db.getAttributesWithNameLike(req.query.q).then((attributes) => this.sendResponse(res, attributes))
         else this.db.getAttributes().then((attributes) => this.sendResponse(res, attributes))
     }
 
@@ -43,7 +43,7 @@ export default class Controller {
 
     // TODO: modify so some people can see unavailable equipment types?
     getTypes = (req: Request, res: Response) => {
-        if (req.params.q !== undefined) this.db.getTypesWithNameLike(req.params.q).then((types) => this.sendResponse(res, types))
+        if (req.query.q !== undefined) this.db.getTypesWithNameLike(req.query.q).then((types) => this.sendResponse(res, types))
         else this.db.getAvailableTypes().then((types) => this.sendResponse(res, types))
     }
 

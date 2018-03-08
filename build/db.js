@@ -56,7 +56,7 @@ var Db = /** @class */ (function () {
             return _this.Type.findAll({
                 where: {
                     name: (_a = {},
-                        _a[Sequelize.Op.regexp] = '/.*' + name + '.*/',
+                        _a[Sequelize.Op.like] = '%' + name + '%',
                         _a),
                     available: true
                 },
