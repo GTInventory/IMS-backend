@@ -11,39 +11,65 @@ The API is documented at https://documenter.getpostman.com/view/3796309/ims-back
 
 #### Data Types
 
-##### `EquipmentAttribute`
+##### Attribute
+
+An Attribute represents a single type of metadata that can be attached to a Type. For example, a user might want to create a “MAC Address” Attribute to attach to the “Laptop” and “Router” Types.
+
 Key | Type | Description
 --- | ---- | -----------
-`id` | `int` | Unique numerical identifier for this attribute.
-`name` | `string` | 2-32 characters uniquely identifying this attribute.
-`type` | `string` | One of `('Boolean','Currency','Integer','DateTime','String','Enum','Image','TextBox')`. Identifies the type of data that users may enter into this attribute.
-`regex` | `string` | A JS-compatible regex string to validate new instances of this attribute.
-`required` | `bool` | Do new instances of this attribute require a value for this attribute?
-`unique` | `bool` | Should new instances of this attribute be unique across all instances of this attribute?
-`public` | `bool` | Can unprivileged users see the value of this attribute?
-`helpText` | `string` | Optional text presented to the user which will give hints on how to fill this attribute in.
+`id` | `int` | Unique numerical identifier for this Attribute.
+`name` | `string` | 2-32 characters uniquely identifying this Attribute.
+`type` | `string` | One of `('Boolean','Currency','Integer','DateTime','String','Enum','Image','TextBox')`. Identifies the type of data that users may enter into this Attribute. Note: In data transfer, this is represented as a string for ease of parsing. However, in the database, it is stored as a Postgres enum type.
+`regex` | `string` | A JS-compatible regex string to validate new instances of this Attribute. Only applies to Attributes of `String` type.
+`choices` | `string[]` | A list of possible values this Attribute may have. Only applies to Attributes of `Enum` type.
+`uniqueGlobally` | `bool` | Should new instances of this Attribute be unique across all instances of this Attribute?
+`public` | `bool` | When this field is false, unprivileged users will not be able to see the contents of this Attribute on the frontend.
+`helpText` | `string` | Optional text presented to the user which will give hints on how to fill this Attribute in.
+`defaultValue` | `string` | The default value this Attribute should take. For `Boolean`, this may be either `true` or `false`.
 
-##### `EquipmentType`
+##### Type
+
+A Type represents a category of Items described by a set of Attributes attached to the Type. For example, you could have a "Laptop" type to hold all laptops, and then a "MAC Address" attribute on that type.
+
 Key | Type | Description
 --- | ---- | -----------
-`id` | `int` | Unique numerical identifier for this equipment type.
-`name` | `string` | 2-32 characters uniquely identifying this attribute.
-`nameAttribute` | `int` | The `id` of an `EquipmentAttribute` that will be used as the display value for `Equipment` having this `EquipmentType`.
-`available` | `bool` | Is this type available for creating new `Equipment` instances?
+`id` | `int` | Unique numerical identifier for this Type.
+`name` | `string` | 2-32 characters uniquely identifying this Type.
+`nameAttribute` | `int` | The `id` of an Attribute that will be used as the display value for Item having this Type.
+`available` | `bool` | Is this Type available for creating new Item instances?
 
-##### `EquipmentAttributeInstance`
+##### Item
+
+An Item represents 1 unique inventory item.
+
+Key | Type | Description
+--- | ---- | -----------
+`id`| `int` | Unique numerical identifier for this Item.
+`type` | `int` | Th Type this Item belongs to.
+`deleted` | `bool` | If this is true, the Item has been soft-deleted and will not be visible to the public.
+`attributes` | `AttributeInstance[]` | All the current Attributes and their values belonging to this Item.
+
+##### AttributeInstance
+
+AttributeInstance relations connect singular values of Attributes to Items.
+
 Key | Type | Description
 --- | ---- | -----------
 `id` | `int` | Unique numerical identifier for this instance of an attribute.
 `attribute` | `int` | The `id` of the `EquipmentAttribute` that this is an instance of.
 `value` | `string` | The value of this instance of an attribute.
 
-##### `Equipment`
+##### AttributeType
+
+AttributeType relations connect Attributes to their Types.
+
 Key | Type | Description
 --- | ---- | -----------
-`id`| `int` | Unique numerical identifier for this equipment.
-`type` | `int` | The `EquipmentType` this equipment belongs to.
-`attributes` | `EquipmentAttributeInstance[]` | All the current attributes and their values belonging to this `Equipment`.
+`typeId` | `int` | The Type that is being linked.
+`attributeId` | `int` | The Attribute that is being linked.
+`deleted` | `bool` | Is this AttributeType still a usable relation?
+`required` | `string` | One of `('Required', 'Suggested', 'Optional')`. If it is Required, attempts to pass an empty value for this Attribute will be rejected. If it is Suggested, it will be emphasized in the UI to indicate users should enter data. If it is Optional, no special treatment is done. Note: In data transfer, this is represented as a string for ease of parsing. However, in the database, it is stored as a Postgres enum type.
+`uniqueForType` | `bool` | Should new instances of this AttributeType be unique across all instances of this type? Note: If the Type's `uniqueGlobally` attribute is `true`, global uniqueness will be checked regardless of this value.
 
 
 ### Contributing

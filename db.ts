@@ -1,5 +1,5 @@
 import * as Sequelize from 'sequelize'
-import { text } from 'body-parser';
+import { text } from 'body-parser'
 
 /**
  * Magical database class. Initializes Sequelize database layer and performs database operations.
@@ -8,6 +8,7 @@ export default class Db {
     private sequelize: Sequelize.Sequelize
     // model types
     private AttributeInstance: Sequelize.Model<any, any>
+    private AttributeType: Sequelize.Model<any, any>
     private Attribute: Sequelize.Model<any, any>
     private Type: Sequelize.Model<any, any>
     private Item: Sequelize.Model<any, any>
@@ -15,7 +16,9 @@ export default class Db {
     constructor(connString: string) {
         this.sequelize = new Sequelize(connString)
         this._initializeModels()
-        this.sequelize.sync().error((reason) => {
+        this.sequelize.sync().then((_) => {
+            //this.sequelize.sync({force: true})
+        }).error((reason) => {
             throw new Error('Database connection error: ' + reason)
         })
     }
@@ -24,7 +27,10 @@ export default class Db {
         this.Item.findAll({
             where: {
                 deleted: false
-            }
+            },
+            include: [
+                {model: this.AttributeInstance, as: 'attributes'}
+            ]
         })
 
     getItemById = (id: number) =>
@@ -32,7 +38,10 @@ export default class Db {
             where: {
                 deleted: false,
                 id
-            }
+            },
+            include: [
+                {model: this.AttributeInstance, as: 'attributes'}
+            ]
         })
 
     insertItem = (item: any) =>
@@ -53,7 +62,10 @@ export default class Db {
             where: {
                 available: true
             },
-            order: [['name', 'ASC']]
+            order: [['name', 'ASC']],
+            include: [
+                {model: this.Attribute, as: 'attributes'}
+            ]
         })
 
     getTypesWithNameLike = (name: string) =>
@@ -61,24 +73,34 @@ export default class Db {
             where: {
                 name: {
                     [Sequelize.Op.regexp]: '/.*' + name + '.*/'
-                }
-            }
+                },
+                available: true
+            },
+            order: [['name', 'ASC']],
+            include: [
+                {model: this.Attribute, as: 'attributes'}
+            ]
         })
 
     getTypeById = (id: number) =>
         this.Type.findOne({
             where: {
-                id
-            }
+                id,
+                available: true
+            },
+            include: [
+                {model: this.Attribute, as: 'attributes'}
+            ]
         })
-
+ 
     insertType = (type: any) =>
         this.Type.create(type)
 
     updateType = (id: number, type: any) =>
         this.Type.findOne({
             where: {
-                id: id
+                id: id,
+                available: true
             }
         }).then((old: any) => {
             old.update(type)
@@ -96,6 +118,17 @@ export default class Db {
                     [Sequelize.Op.like]: '%' + name + '%'
                 }
             }
+        })
+
+    validateAttributeIds = (ids: number[]) =>
+        this.Attribute.count({
+            where: {
+                id: {
+                    [Sequelize.Op.or]: ids
+                }
+            }
+        }).then(count => {
+            if (count != ids.length) throw Error()
         })
 
     getAttributeById = (id: number) =>
@@ -117,6 +150,19 @@ export default class Db {
             old.update(attribute)
         })
 
+    insertAttributeInstance = (attributeInstance: any) =>
+        this.AttributeInstance.create(attributeInstance)
+
+    checkAttributesForUniqueness = (attributes: any[]) =>
+        this.AttributeInstance.findOne({
+            where: {
+                [Sequelize.Op.or]: attributes.map<any>((attr) => { return {
+                    attribute: attr.attributeId,
+                    value: attr.value
+                }})
+            }
+        }).thenReturn((attr) => !attr)
+
     private _initializeModels() {
         this.Attribute = this.sequelize.define('attribute', {
             id: {
@@ -127,19 +173,35 @@ export default class Db {
             name: {
                 type: Sequelize.STRING,
                 unique: true,
-                validate: {
-                    len: [2, 32],
-                    notEmpty: true
-                }
+                allowNull: false,
             },
-            type: Sequelize.ENUM(
-                ['Boolean', 'Currency', 'Integer', 'DateTime', 'String', 'Enum', 'Image', 'TextBox']
-            ),
-            regex: Sequelize.STRING,
-            required: Sequelize.BOOLEAN,
-            unique: Sequelize.BOOLEAN,
-            public: Sequelize.BOOLEAN,
+            type: {
+                type: Sequelize.ENUM(
+                    ['Boolean', 'Currency', 'Integer', 'DateTime', 'String', 'Enum', 'Image', 'TextBox'],
+                ),
+                defaultValue: 'String'
+            },
+            regex: {
+                type: Sequelize.STRING,
+                defaultValue: "/^.*$/"
+            },
+            choices: {
+                type: Sequelize.ARRAY(Sequelize.STRING),
+                defaultValue: []
+            },
+            public: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false,
+            },
+            uniqueGlobally: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false,
+            },
             helpText: {
+                type: Sequelize.STRING,
+                defaultValue: ""
+            },
+            defaultValue: {
                 type: Sequelize.STRING,
                 defaultValue: ""
             }
@@ -156,9 +218,13 @@ export default class Db {
                 references: {
                     model: this.Attribute,
                     key: 'id'
-                }
+                },
+                allowNull: false,
             },
-            value: Sequelize.STRING,
+            value: {
+                type: Sequelize.STRING,
+                defaultValue: ""
+            },
         });
 
         this.Type = this.sequelize.define('type', {
@@ -169,17 +235,16 @@ export default class Db {
             },
             name: {
                 type: Sequelize.STRING,
-                validate: {
-                    len: [2, 32],
-                    notEmpty: true
-                }
+                unique: true,
+                allowNull: false,
             },
             nameAttribute: {
                 type: Sequelize.INTEGER,
                 references: {
                     model: this.Attribute,
                     key: 'id'
-                }
+                },
+                allowNull: false,
             },
             available: {
                 type: Sequelize.BOOLEAN,
@@ -198,7 +263,8 @@ export default class Db {
                 references: {
                     model: this.Type,
                     key: 'id'
-                }
+                },
+                allowNull: false
             },
             deleted: {
                 type: Sequelize.BOOLEAN,
@@ -206,14 +272,46 @@ export default class Db {
             }
         })
 
+        this.AttributeType = this.sequelize.define('attributeType', {
+            typeId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: this.Type,
+                    key: 'id'
+                },
+                allowNull: false
+            },
+            attributeId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: this.Attribute,
+                    key: 'id'
+                },
+                allowNull: false
+            },
+            deleted: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false
+            },
+            required: {
+                type: Sequelize.ENUM(
+                    ['Required', 'Suggested', 'Optional']
+                ),
+                defaultValue: 'Optional'
+            },
+            uniqueForType: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false
+            }
+        })
+
         this.Attribute.belongsToMany(this.Type, { 
-            through: 'equipment_m2m_attribute_type',
-            as: 'types'
+            through: this.AttributeType
         })
         this.Type.belongsToMany(this.Attribute, { 
-            through: 'equipment_m2m_attribute_type',
-            as: 'attributes'
+            through: this.AttributeType
         })
         this.Item.hasMany(this.AttributeInstance, { as: 'attributes' })
+        this.AttributeInstance.belongsTo(this.Item, { as: 'item' })
     }
 }

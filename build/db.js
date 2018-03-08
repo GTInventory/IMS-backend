@@ -11,7 +11,10 @@ var Db = /** @class */ (function () {
             return _this.Item.findAll({
                 where: {
                     deleted: false
-                }
+                },
+                include: [
+                    { model: _this.AttributeInstance, as: 'attributes' }
+                ]
             });
         };
         this.getItemById = function (id) {
@@ -19,7 +22,10 @@ var Db = /** @class */ (function () {
                 where: {
                     deleted: false,
                     id: id
-                }
+                },
+                include: [
+                    { model: _this.AttributeInstance, as: 'attributes' }
+                ]
             });
         };
         this.insertItem = function (item) {
@@ -40,7 +46,10 @@ var Db = /** @class */ (function () {
                 where: {
                     available: true
                 },
-                order: [['name', 'ASC']]
+                order: [['name', 'ASC']],
+                include: [
+                    { model: _this.Attribute, as: 'attributes' }
+                ]
             });
         };
         this.getTypesWithNameLike = function (name) {
@@ -48,16 +57,25 @@ var Db = /** @class */ (function () {
                 where: {
                     name: (_a = {},
                         _a[Sequelize.Op.regexp] = '/.*' + name + '.*/',
-                        _a)
-                }
+                        _a),
+                    available: true
+                },
+                order: [['name', 'ASC']],
+                include: [
+                    { model: _this.Attribute, as: 'attributes' }
+                ]
             });
             var _a;
         };
         this.getTypeById = function (id) {
             return _this.Type.findOne({
                 where: {
-                    id: id
-                }
+                    id: id,
+                    available: true
+                },
+                include: [
+                    { model: _this.Attribute, as: 'attributes' }
+                ]
             });
         };
         this.insertType = function (type) {
@@ -66,7 +84,8 @@ var Db = /** @class */ (function () {
         this.updateType = function (id, type) {
             return _this.Type.findOne({
                 where: {
-                    id: id
+                    id: id,
+                    available: true
                 }
             }).then(function (old) {
                 old.update(type);
@@ -84,6 +103,19 @@ var Db = /** @class */ (function () {
                         _a[Sequelize.Op.like] = '%' + name + '%',
                         _a)
                 }
+            });
+            var _a;
+        };
+        this.validateAttributeIds = function (ids) {
+            return _this.Attribute.count({
+                where: {
+                    id: (_a = {},
+                        _a[Sequelize.Op.or] = ids,
+                        _a)
+                }
+            }).then(function (count) {
+                if (count != ids.length)
+                    throw Error();
             });
             var _a;
         };
@@ -106,9 +138,27 @@ var Db = /** @class */ (function () {
                 old.update(attribute);
             });
         };
+        this.insertAttributeInstance = function (attributeInstance) {
+            return _this.AttributeInstance.create(attributeInstance);
+        };
+        this.checkAttributesForUniqueness = function (attributes) {
+            return _this.AttributeInstance.findOne({
+                where: (_a = {},
+                    _a[Sequelize.Op.or] = attributes.map(function (attr) {
+                        return {
+                            attribute: attr.attributeId,
+                            value: attr.value
+                        };
+                    }),
+                    _a)
+            }).thenReturn(function (attr) { return !attr; });
+            var _a;
+        };
         this.sequelize = new Sequelize(connString);
         this._initializeModels();
-        this.sequelize.sync().error(function (reason) {
+        this.sequelize.sync().then(function (_) {
+            //this.sequelize.sync({force: true})
+        }).error(function (reason) {
             throw new Error('Database connection error: ' + reason);
         });
     }
@@ -122,17 +172,33 @@ var Db = /** @class */ (function () {
             name: {
                 type: Sequelize.STRING,
                 unique: true,
-                validate: {
-                    len: [2, 32],
-                    notEmpty: true
-                }
+                allowNull: false,
             },
-            type: Sequelize.ENUM(['Boolean', 'Currency', 'Integer', 'DateTime', 'String', 'Enum', 'Image', 'TextBox']),
-            regex: Sequelize.STRING,
-            required: Sequelize.BOOLEAN,
-            unique: Sequelize.BOOLEAN,
-            public: Sequelize.BOOLEAN,
+            type: {
+                type: Sequelize.ENUM(['Boolean', 'Currency', 'Integer', 'DateTime', 'String', 'Enum', 'Image', 'TextBox']),
+                defaultValue: 'String'
+            },
+            regex: {
+                type: Sequelize.STRING,
+                defaultValue: "/^.*$/"
+            },
+            choices: {
+                type: Sequelize.ARRAY(Sequelize.STRING),
+                defaultValue: []
+            },
+            public: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false,
+            },
+            uniqueGlobally: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false,
+            },
             helpText: {
+                type: Sequelize.STRING,
+                defaultValue: ""
+            },
+            defaultValue: {
                 type: Sequelize.STRING,
                 defaultValue: ""
             }
@@ -148,9 +214,13 @@ var Db = /** @class */ (function () {
                 references: {
                     model: this.Attribute,
                     key: 'id'
-                }
+                },
+                allowNull: false,
             },
-            value: Sequelize.STRING,
+            value: {
+                type: Sequelize.STRING,
+                defaultValue: ""
+            },
         });
         this.Type = this.sequelize.define('type', {
             id: {
@@ -160,17 +230,16 @@ var Db = /** @class */ (function () {
             },
             name: {
                 type: Sequelize.STRING,
-                validate: {
-                    len: [2, 32],
-                    notEmpty: true
-                }
+                unique: true,
+                allowNull: false,
             },
             nameAttribute: {
                 type: Sequelize.INTEGER,
                 references: {
                     model: this.Attribute,
                     key: 'id'
-                }
+                },
+                allowNull: false,
             },
             available: {
                 type: Sequelize.BOOLEAN,
@@ -188,23 +257,54 @@ var Db = /** @class */ (function () {
                 references: {
                     model: this.Type,
                     key: 'id'
-                }
+                },
+                allowNull: false
             },
             deleted: {
                 type: Sequelize.BOOLEAN,
                 defaultValue: false
             }
         });
+        this.AttributeType = this.sequelize.define('attributeType', {
+            typeId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: this.Type,
+                    key: 'id'
+                },
+                allowNull: false
+            },
+            attributeId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: this.Attribute,
+                    key: 'id'
+                },
+                allowNull: false
+            },
+            deleted: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false
+            },
+            required: {
+                type: Sequelize.ENUM(['Required', 'Suggested', 'Optional']),
+                defaultValue: 'Optional'
+            },
+            uniqueForType: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false
+            }
+        });
         this.Attribute.belongsToMany(this.Type, {
-            through: 'equipment_m2m_attribute_type',
-            as: 'types'
+            through: this.AttributeType
         });
         this.Type.belongsToMany(this.Attribute, {
-            through: 'equipment_m2m_attribute_type',
-            as: 'attributes'
+            through: this.AttributeType
         });
         this.Item.hasMany(this.AttributeInstance, { as: 'attributes' });
+        this.AttributeInstance.belongsTo(this.Item, { as: 'item' });
     };
     return Db;
 }());
 exports.default = Db;
+//# sourceMappingURL=db.js.map

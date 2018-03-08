@@ -27,6 +27,7 @@ app.get('/type', controller.getTypes)
 app.get('/type/:id(\\d+)', controller.getType)
 app.post('/type', controller.postType)
 app.post('/type/:id(\\d+)', controller.updateType)
+app.post('/type/:id(\\d+)/attribute', controller.postTypeAttribute)
 
 app.get('/item', controller.getItems)
 app.get('/item/:id(\\d+)', controller.getItem)

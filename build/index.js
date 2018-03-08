@@ -25,6 +25,7 @@ app.get('/type', controller.getTypes);
 app.get('/type/:id(\\d+)', controller.getType);
 app.post('/type', controller.postType);
 app.post('/type/:id(\\d+)', controller.updateType);
+app.post('/type/:id(\\d+)/attribute', controller.postTypeAttribute);
 app.get('/item', controller.getItems);
 app.get('/item/:id(\\d+)', controller.getItem);
 app.post('/item', controller.postItem);
@@ -33,3 +34,4 @@ app.use(function (req, res, next) {
     controller.sendNotFound(res);
 });
 app.listen(process.env.PORT || 8080, function () { return console.log('Listening on port ' + (process.env.PORT || 8080)); });
+//# sourceMappingURL=index.js.map

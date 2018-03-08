@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var authorizer_1 = require("./authorizer");
+var bluebird_1 = require("sequelize/node_modules/bluebird");
 /**
  * Fulfills incoming router requests.
  */
@@ -30,7 +31,7 @@ var Controller = /** @class */ (function () {
                 _this.sendUnauthorized(res);
             else
                 _this.db.updateAttribute(req.params.id, req.body)
-                    .then(function (type) { res.redirect('/attribute/' + req.params.id); })
+                    .then(function (attribute) { res.redirect('/attribute/' + req.params.id); })
                     .catch(function (e) { return _this.sendError(res, 'Error updating attribute', 500, e); });
         };
         /// Type Operations
@@ -49,10 +50,54 @@ var Controller = /** @class */ (function () {
         this.postType = function (req, res) {
             if (!_this.auth.has(authorizer_1.Permission.TypeAdd, req))
                 _this.sendUnauthorized(res);
-            else
+            else if (!req.body.attributes || !req.body.attributes.find(function (x) { return x.id == req.body.nameAttribute; })) {
+                _this.sendError(res, 'nameAttribute must exist in attributes');
+                return;
+            }
+            _this.db.validateAttributeIds(req.body.attributes.map(function (x) { return x.id; })).then(function (valid) {
                 _this.db.insertType(req.body)
-                    .then(function (type) { res.redirect('/type/' + type.id); })
+                    .then(function (type) {
+                    try {
+                        for (var _i = 0, _a = req.body.attributes; _i < _a.length; _i++) {
+                            var attribute = _a[_i];
+                            attribute.attributeId = attribute.id;
+                            type.addAttribute(attribute.id, { through: attribute });
+                        }
+                        res.redirect('/type/' + type.id);
+                    }
+                    catch (e) {
+                        if (_this.isKeyError(e))
+                            _this.sendError(res, '');
+                    }
+                })
                     .catch(function (e) { return _this.sendError(res, 'Error creating type', 500, e); });
+            })
+                .catch(function (e) { return _this.sendError(res, 'The referenced attributes are not valid'); });
+        };
+        this.postTypeAttribute = function (req, res) {
+            if (!_this.auth.has(authorizer_1.Permission.TypeEdit, req))
+                _this.sendUnauthorized(res);
+            else
+                _this.db.getTypeById(req.params.id).then(function (type) {
+                    if (!type)
+                        _this.sendNotFound(res);
+                    else
+                        type.getAttributes().then(function (attributes) {
+                            if (attributes.find(function (a) { return a.id == req.body.attribute.id; }))
+                                _this.sendError(res, 'Attribute already exists on type');
+                            else {
+                                req.body.attribute.attributeId = req.body.attribute.id;
+                                type.addAttribute(req.body.attribute.id, { through: req.body.attribute }).then(function (x) {
+                                    res.redirect('/type/' + req.params.id);
+                                }).catch(function (e) {
+                                    if (_this.isKeyError(e))
+                                        _this.sendError(res, 'Referenced attribute does not exist');
+                                    else
+                                        _this.sendError(res, 'Error adding attribute', 500, e);
+                                });
+                            }
+                        });
+                });
         };
         this.updateType = function (req, res) {
             if (!_this.auth.has(authorizer_1.Permission.TypeEdit, req))
@@ -73,17 +118,96 @@ var Controller = /** @class */ (function () {
             if (!_this.auth.has(authorizer_1.Permission.ItemAdd, req))
                 _this.sendUnauthorized(res);
             else
-                _this.db.insertItem(req.body)
-                    .then(function (item) { res.redirect('/item/' + item.id); })
-                    .catch(function (e) { return _this.sendError(res, 'Error creating item', 500, e); });
+                _this.validateItemBody(undefined, req.body).then(function (errors) {
+                    if (errors.length)
+                        return _this.sendError(res, errors.join(', '));
+                    _this.db.insertItem(req.body)
+                        .then(function (item) {
+                        _this.createAttributeInstances(item, req.body.attributes).then(function (x) {
+                            return res.redirect('/item/' + item.id);
+                        });
+                    })
+                        .catch(function (e) { return _this.sendError(res, 'Error creating item', 500, e); });
+                });
         };
         this.updateItem = function (req, res) {
             if (!_this.auth.has(authorizer_1.Permission.ItemEdit, req))
                 _this.sendUnauthorized(res);
             else
-                _this.db.updateItem(req.params.id, req.body)
-                    .then(function (item) { res.redirect('/item/' + req.params.id); })
-                    .catch(function (e) { return _this.sendError(res, 'Error updating item', 500, e); });
+                _this.db.getItemById(req.params.id).then(function (item) {
+                    if (!item)
+                        _this.sendNotFound(res);
+                    else
+                        _this.validateItemBody(item, req.body).then(function (errors) {
+                            if (errors.length)
+                                return _this.sendError(res, errors.join(', '));
+                            _this.db.updateItem(item.id, req.body)
+                                .then(function (tem) {
+                                _this.createAttributeInstances(item, req.body.attributes).then(function (x) {
+                                    return res.redirect('/item/' + item.id);
+                                });
+                            })
+                                .catch(function (e) { return _this.sendError(res, 'Error creating item', 500, e); });
+                        });
+                });
+        };
+        this.createAttributeInstances = function (item, attributes) {
+            return bluebird_1.Promise.all(attributes.map(function (attribute) { return _this.db.insertAttributeInstance({
+                attribute: attribute.attributeId,
+                value: attribute.value
+            }); })).then(function (instances) { return item.addAttributes(instances); });
+        };
+        this.validateItemBody = function (item, body) {
+            var errors = [];
+            if (!body.type)
+                throw Error('No type specified');
+            else {
+                _this.db.getTypeById(body.type).then(function (type) {
+                    if (!type)
+                        errors.push('Non-existent type specified');
+                    else {
+                        for (var _i = 0, _a = type.attributes; _i < _a.length; _i++) {
+                            var attributeSpec = _a[_i];
+                            var attribute = body.attributes.find(function (a) { return a.attributeId == attributeSpec.id; });
+                            if ((!attribute || !attribute.value) && attributeSpec.required && !item) {
+                                errors.push("\"" + attributeSpec.name + "\" requires a value");
+                            }
+                            else {
+                                var value = attribute.value;
+                                switch (attributeSpec.type) {
+                                    case 'Boolean':
+                                        if (value != '1' && value != '0')
+                                            errors.push("\"" + attributeSpec.name + "\" must be either \"1\" or \"0\"");
+                                        break;
+                                    case 'Currency':
+                                        if (!/^(\d)+(\.(\d){2})$/.test(value))
+                                            errors.push("\"" + attributeSpec.name + "\" must be a currency value");
+                                        break;
+                                    case 'Integer':
+                                        if (!/^(\d)+$/.test(value))
+                                            errors.push("\"" + attributeSpec.name + "\" must be an integer");
+                                        break;
+                                    case 'DateTime':
+                                        // TODO: postgres is pretty tolerant of this input
+                                        break;
+                                    case 'String':
+                                    case 'TextBox':
+                                        var re = RegExp(attributeSpec.regex);
+                                        if (!re.test(value))
+                                            errors.push("\"" + attributeSpec.name + "\" must match the regex \"" + attributeSpec.regex + "\"");
+                                        break;
+                                    case 'Enum':
+                                        if (!attributeSpec.choices.contains(value))
+                                            errors.push("\"" + attributeSpec.name + "\" must be one of \"" + attributeSpec.choices.join('", "') + "\"");
+                                        break;
+                                    default:
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            return bluebird_1.Promise.all(errors);
         };
         this.sendNotFound = function (res) {
             return _this.sendError(res, 'Resource not found', 404);
@@ -121,9 +245,16 @@ var Controller = /** @class */ (function () {
         this.sendUnauthorized = function (res) {
             return _this.sendError(res, "Access level insufficient for this resource.", 403);
         };
+        /**
+         * Check if an error from the DB is a foreign key error or some other kind.
+         */
+        this.isKeyError = function (e) {
+            return e && e.name && e.name == "SequelizeForeignKeyConstraintError";
+        };
         this.db = db;
         this.auth = new authorizer_1.Authorizer();
     }
     return Controller;
 }());
 exports.default = Controller;
+//# sourceMappingURL=controller.js.map

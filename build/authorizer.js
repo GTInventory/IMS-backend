@@ -23,3 +23,4 @@ var Authorizer = /** @class */ (function () {
     return Authorizer;
 }());
 exports.Authorizer = Authorizer;
+//# sourceMappingURL=authorizer.js.map
