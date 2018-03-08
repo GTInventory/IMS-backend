@@ -108,6 +108,9 @@ export default class Db {
 
     getAttributes = () =>
         this.Attribute.findAll({
+            where: {
+                available: true
+            },
             order: [['name', 'ASC']]
         })
 
@@ -116,7 +119,8 @@ export default class Db {
             where: {
                 name: {
                     [Sequelize.Op.like]: '%' + name + '%'
-                }
+                },
+                available: true,
             }
         })
 
@@ -125,8 +129,9 @@ export default class Db {
             where: {
                 id: {
                     [Sequelize.Op.or]: ids
-                }
-            }
+                },
+                available: true
+            },
         }).then(count => {
             if (count != ids.length) throw Error()
         })
@@ -134,7 +139,8 @@ export default class Db {
     getAttributeById = (id: number) =>
         this.Attribute.findOne({
             where: {
-                id
+                id,
+                available: true
             }
         })
 
@@ -144,7 +150,8 @@ export default class Db {
     updateAttribute = (id: number, attribute: any) =>
         this.Attribute.findOne({
             where: {
-                id: id
+                id: id,
+                available: true
             }
         }).then((old: any) => {
             old.update(attribute)

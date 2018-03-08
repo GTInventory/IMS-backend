@@ -93,6 +93,9 @@ var Db = /** @class */ (function () {
         };
         this.getAttributes = function () {
             return _this.Attribute.findAll({
+                where: {
+                    available: true
+                },
                 order: [['name', 'ASC']]
             });
         };
@@ -101,7 +104,8 @@ var Db = /** @class */ (function () {
                 where: {
                     name: (_a = {},
                         _a[Sequelize.Op.like] = '%' + name + '%',
-                        _a)
+                        _a),
+                    available: true,
                 }
             });
             var _a;
@@ -111,8 +115,9 @@ var Db = /** @class */ (function () {
                 where: {
                     id: (_a = {},
                         _a[Sequelize.Op.or] = ids,
-                        _a)
-                }
+                        _a),
+                    available: true
+                },
             }).then(function (count) {
                 if (count != ids.length)
                     throw Error();
@@ -122,7 +127,8 @@ var Db = /** @class */ (function () {
         this.getAttributeById = function (id) {
             return _this.Attribute.findOne({
                 where: {
-                    id: id
+                    id: id,
+                    available: true
                 }
             });
         };
@@ -132,7 +138,8 @@ var Db = /** @class */ (function () {
         this.updateAttribute = function (id, attribute) {
             return _this.Attribute.findOne({
                 where: {
-                    id: id
+                    id: id,
+                    available: true
                 }
             }).then(function (old) {
                 old.update(attribute);
