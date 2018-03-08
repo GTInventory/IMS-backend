@@ -4,10 +4,13 @@ var Permission;
 (function (Permission) {
     Permission[Permission["AttributeAdd"] = 0] = "AttributeAdd";
     Permission[Permission["AttributeEdit"] = 1] = "AttributeEdit";
-    Permission[Permission["TypeAdd"] = 2] = "TypeAdd";
-    Permission[Permission["TypeEdit"] = 3] = "TypeEdit";
-    Permission[Permission["ItemAdd"] = 4] = "ItemAdd";
-    Permission[Permission["ItemEdit"] = 5] = "ItemEdit";
+    Permission[Permission["AttributeDelete"] = 2] = "AttributeDelete";
+    Permission[Permission["TypeAdd"] = 3] = "TypeAdd";
+    Permission[Permission["TypeEdit"] = 4] = "TypeEdit";
+    Permission[Permission["TypeDelete"] = 5] = "TypeDelete";
+    Permission[Permission["ItemAdd"] = 6] = "ItemAdd";
+    Permission[Permission["ItemEdit"] = 7] = "ItemEdit";
+    Permission[Permission["ItemDelete"] = 8] = "ItemDelete";
 })(Permission = exports.Permission || (exports.Permission = {}));
 var Authorizer = /** @class */ (function () {
     function Authorizer() {

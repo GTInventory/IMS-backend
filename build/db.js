@@ -44,7 +44,7 @@ var Db = /** @class */ (function () {
         this.getAvailableTypes = function () {
             return _this.Type.findAll({
                 where: {
-                    available: true
+                    deleted: false
                 },
                 order: [['name', 'ASC']],
                 include: [
@@ -58,7 +58,7 @@ var Db = /** @class */ (function () {
                     name: (_a = {},
                         _a[Sequelize.Op.like] = '%' + name + '%',
                         _a),
-                    available: true
+                    deleted: false
                 },
                 order: [['name', 'ASC']],
                 include: [
@@ -71,7 +71,7 @@ var Db = /** @class */ (function () {
             return _this.Type.findOne({
                 where: {
                     id: id,
-                    available: true
+                    deleted: false
                 },
                 include: [
                     { model: _this.Attribute, as: 'attributes' }
@@ -85,7 +85,7 @@ var Db = /** @class */ (function () {
             return _this.Type.findOne({
                 where: {
                     id: id,
-                    available: true
+                    deleted: false
                 }
             }).then(function (old) {
                 old.update(type);
@@ -94,7 +94,7 @@ var Db = /** @class */ (function () {
         this.getAttributes = function () {
             return _this.Attribute.findAll({
                 where: {
-                    available: true
+                    deleted: false
                 },
                 order: [['name', 'ASC']]
             });
@@ -105,7 +105,7 @@ var Db = /** @class */ (function () {
                     name: (_a = {},
                         _a[Sequelize.Op.like] = '%' + name + '%',
                         _a),
-                    available: true,
+                    deleted: false,
                 }
             });
             var _a;
@@ -116,7 +116,7 @@ var Db = /** @class */ (function () {
                     id: (_a = {},
                         _a[Sequelize.Op.or] = ids,
                         _a),
-                    available: true
+                    deleted: false
                 },
             }).then(function (count) {
                 if (count != ids.length)
@@ -128,7 +128,7 @@ var Db = /** @class */ (function () {
             return _this.Attribute.findOne({
                 where: {
                     id: id,
-                    available: true
+                    deleted: false
                 }
             });
         };
@@ -139,7 +139,7 @@ var Db = /** @class */ (function () {
             return _this.Attribute.findOne({
                 where: {
                     id: id,
-                    available: true
+                    deleted: false
                 }
             }).then(function (old) {
                 old.update(attribute);
@@ -208,6 +208,10 @@ var Db = /** @class */ (function () {
             defaultValue: {
                 type: Sequelize.STRING,
                 defaultValue: ""
+            },
+            deleted: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false
             }
         });
         this.AttributeInstance = this.sequelize.define('attributeInstance', {
@@ -248,9 +252,9 @@ var Db = /** @class */ (function () {
                 },
                 allowNull: false,
             },
-            available: {
+            deleted: {
                 type: Sequelize.BOOLEAN,
-                defaultValue: true
+                defaultValue: false
             }
         });
         this.Item = this.sequelize.define('item', {

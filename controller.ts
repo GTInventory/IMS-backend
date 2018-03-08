@@ -39,6 +39,13 @@ export default class Controller {
             .catch((e) => this.sendError(res, 'Error updating attribute', 500, e))
     }
 
+    deleteAttribute = (req: Request, res: Response) => {
+        if (!this.auth.has(Permission.AttributeDelete, req)) this.sendUnauthorized(res)
+        else this.db.updateAttribute(req.params.id, { deleted: true })
+            .then((attribute) => { this.sendResponse(res, { deleted: true }) })
+            .catch((e) => this.sendError(res, 'Error deleting attribute', 500, e))
+    }
+
     /// Type Operations
 
     // TODO: modify so some people can see unavailable equipment types?
@@ -106,6 +113,12 @@ export default class Controller {
             .catch((e) => this.sendError(res, 'Error updating type', 500, e))
     }
 
+    deleteType = (req: Request, res: Response) => {
+        if (!this.auth.has(Permission.TypeDelete, req)) this.sendUnauthorized(res)
+        else this.db.updateType(req.params.id, { deleted: true })
+            .then((type) => { this.sendResponse(res, { deleted: true }) })
+            .catch((e) => this.sendError(res, 'Error deleting type', 500, e))
+    }
 
     /// Equipment/Item Operations
 
@@ -145,6 +158,13 @@ export default class Controller {
                     .catch((e) => this.sendError(res, 'Error creating item', 500, e))
             })
         })
+    }
+
+    deleteItem = (req: Request, res: Response) => {
+        if (!this.auth.has(Permission.ItemDelete, req)) this.sendUnauthorized(res)
+        else this.db.updateItem(req.params.id, { deleted: true })
+            .then((item) => { this.sendResponse(res, { deleted: true }) })
+            .catch((e) => this.sendError(res, 'Error deleting item', 500, e))
     }
 
     createAttributeInstances = (item: any, attributes: any[]) =>

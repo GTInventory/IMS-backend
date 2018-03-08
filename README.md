@@ -26,6 +26,7 @@ Key | Type | Description
 `public` | `bool` | When this field is false, unprivileged users will not be able to see the contents of this Attribute on the frontend.
 `helpText` | `string` | Optional text presented to the user which will give hints on how to fill this Attribute in.
 `defaultValue` | `string` | The default value this Attribute should take. For `Boolean`, this may be either `true` or `false`.
+`deleted` | `bool` | If true, this Attribute has been soft-deleted and is no longer available.
 
 ##### Type
 
@@ -36,7 +37,7 @@ Key | Type | Description
 `id` | `int` | Unique numerical identifier for this Type.
 `name` | `string` | 2-32 characters uniquely identifying this Type.
 `nameAttribute` | `int` | The `id` of an Attribute that will be used as the display value for Item having this Type.
-`available` | `bool` | Is this Type available for creating new Item instances?
+`deleted` | `bool` | If true, this Type has been soft-deleted and is no longer available.
 
 ##### Item
 

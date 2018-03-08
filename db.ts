@@ -60,7 +60,7 @@ export default class Db {
     getAvailableTypes = () =>
         this.Type.findAll({
             where: {
-                available: true
+                deleted: false
             },
             order: [['name', 'ASC']],
             include: [
@@ -74,7 +74,7 @@ export default class Db {
                 name: {
                     [Sequelize.Op.like]: '%' + name + '%'
                 },
-                available: true
+                deleted: false
             },
             order: [['name', 'ASC']],
             include: [
@@ -86,7 +86,7 @@ export default class Db {
         this.Type.findOne({
             where: {
                 id,
-                available: true
+                deleted: false
             },
             include: [
                 {model: this.Attribute, as: 'attributes'}
@@ -100,7 +100,7 @@ export default class Db {
         this.Type.findOne({
             where: {
                 id: id,
-                available: true
+                deleted: false
             }
         }).then((old: any) => {
             old.update(type)
@@ -109,7 +109,7 @@ export default class Db {
     getAttributes = () =>
         this.Attribute.findAll({
             where: {
-                available: true
+                deleted: false
             },
             order: [['name', 'ASC']]
         })
@@ -120,7 +120,7 @@ export default class Db {
                 name: {
                     [Sequelize.Op.like]: '%' + name + '%'
                 },
-                available: true,
+                deleted: false,
             }
         })
 
@@ -130,7 +130,7 @@ export default class Db {
                 id: {
                     [Sequelize.Op.or]: ids
                 },
-                available: true
+                deleted: false
             },
         }).then(count => {
             if (count != ids.length) throw Error()
@@ -140,7 +140,7 @@ export default class Db {
         this.Attribute.findOne({
             where: {
                 id,
-                available: true
+                deleted: false
             }
         })
 
@@ -151,7 +151,7 @@ export default class Db {
         this.Attribute.findOne({
             where: {
                 id: id,
-                available: true
+                deleted: false
             }
         }).then((old: any) => {
             old.update(attribute)
@@ -211,6 +211,10 @@ export default class Db {
             defaultValue: {
                 type: Sequelize.STRING,
                 defaultValue: ""
+            },
+            deleted: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false
             }
         })
 
@@ -253,9 +257,9 @@ export default class Db {
                 },
                 allowNull: false,
             },
-            available: {
+            deleted: {
                 type: Sequelize.BOOLEAN,
-                defaultValue: true
+                defaultValue: false
             }
         })
 

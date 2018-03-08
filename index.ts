@@ -22,17 +22,20 @@ app.get('/attribute', controller.getAttributes)
 app.get('/attribute/:id(\\d+)', controller.getAttribute)
 app.post('/attribute', controller.postAttribute)
 app.post('/attribute/:id(\\d+)', controller.updateAttribute)
+app.post('/attribute/:id(\\d+)/delete', controller.deleteAttribute)
 
 app.get('/type', controller.getTypes)
 app.get('/type/:id(\\d+)', controller.getType)
 app.post('/type', controller.postType)
 app.post('/type/:id(\\d+)', controller.updateType)
 app.post('/type/:id(\\d+)/attribute', controller.postTypeAttribute)
+app.post('/type/:id(\\d+)/delete', controller.deleteType)
 
 app.get('/item', controller.getItems)
 app.get('/item/:id(\\d+)', controller.getItem)
 app.post('/item', controller.postItem)
 app.post('/item/:id(\\d+)', controller.updateItem)
+app.post('/item/:id(\\d+)/delete', controller.deleteItem)
 
 app.use(function (req, res, next) {
     controller.sendNotFound(res)

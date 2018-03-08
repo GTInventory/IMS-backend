@@ -34,6 +34,14 @@ var Controller = /** @class */ (function () {
                     .then(function (attribute) { res.redirect('/attribute/' + req.params.id); })
                     .catch(function (e) { return _this.sendError(res, 'Error updating attribute', 500, e); });
         };
+        this.deleteAttribute = function (req, res) {
+            if (!_this.auth.has(authorizer_1.Permission.AttributeDelete, req))
+                _this.sendUnauthorized(res);
+            else
+                _this.db.updateAttribute(req.params.id, { deleted: true })
+                    .then(function (attribute) { _this.sendResponse(res, { deleted: true }); })
+                    .catch(function (e) { return _this.sendError(res, 'Error deleting attribute', 500, e); });
+        };
         /// Type Operations
         // TODO: modify so some people can see unavailable equipment types?
         this.getTypes = function (req, res) {
@@ -107,6 +115,14 @@ var Controller = /** @class */ (function () {
                     .then(function (type) { res.redirect('/type/' + req.params.id); })
                     .catch(function (e) { return _this.sendError(res, 'Error updating type', 500, e); });
         };
+        this.deleteType = function (req, res) {
+            if (!_this.auth.has(authorizer_1.Permission.TypeDelete, req))
+                _this.sendUnauthorized(res);
+            else
+                _this.db.updateType(req.params.id, { deleted: true })
+                    .then(function (type) { _this.sendResponse(res, { deleted: true }); })
+                    .catch(function (e) { return _this.sendError(res, 'Error deleting type', 500, e); });
+        };
         /// Equipment/Item Operations
         this.getItems = function (req, res) {
             _this.db.getAllItems().then(function (items) { return _this.sendResponse(res, items); });
@@ -150,6 +166,14 @@ var Controller = /** @class */ (function () {
                                 .catch(function (e) { return _this.sendError(res, 'Error creating item', 500, e); });
                         });
                 });
+        };
+        this.deleteItem = function (req, res) {
+            if (!_this.auth.has(authorizer_1.Permission.ItemDelete, req))
+                _this.sendUnauthorized(res);
+            else
+                _this.db.updateItem(req.params.id, { deleted: true })
+                    .then(function (item) { _this.sendResponse(res, { deleted: true }); })
+                    .catch(function (e) { return _this.sendError(res, 'Error deleting item', 500, e); });
         };
         this.createAttributeInstances = function (item, attributes) {
             return bluebird_1.Promise.all(attributes.map(function (attribute) { return _this.db.insertAttributeInstance({

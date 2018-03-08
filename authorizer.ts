@@ -3,10 +3,13 @@ import { Request } from 'express'
 export enum Permission {
     AttributeAdd,
     AttributeEdit,
+    AttributeDelete,
     TypeAdd,
     TypeEdit,
+    TypeDelete,
     ItemAdd,
-    ItemEdit
+    ItemEdit,
+    ItemDelete
 }
 
 export class Authorizer {
