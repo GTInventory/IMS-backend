@@ -72,7 +72,7 @@ export default class Db {
         this.Type.findAll({
             where: {
                 name: {
-                    [Sequelize.Op.like]: '%' + name + '%'
+                    [Sequelize.Op.iLike]: '%' + name + '%'
                 },
                 deleted: false
             },
@@ -118,7 +118,7 @@ export default class Db {
         this.Attribute.findAll({
             where: {
                 name: {
-                    [Sequelize.Op.like]: '%' + name + '%'
+                    [Sequelize.Op.iLike]: '%' + name + '%'
                 },
                 deleted: false,
             }

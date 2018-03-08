@@ -20,7 +20,7 @@ Key | Type | Description
 `id` | `int` | Unique numerical identifier for this Attribute.
 `name` | `string` | 2-32 characters uniquely identifying this Attribute.
 `type` | `string` | One of `('Boolean','Currency','Integer','DateTime','String','Enum','Image','TextBox')`. Identifies the type of data that users may enter into this Attribute. Note: In data transfer, this is represented as a string for ease of parsing. However, in the database, it is stored as a Postgres enum type.
-`regex` | `string` | A JS-compatible regex string to validate new instances of this Attribute. Only applies to Attributes of `String` type.
+`regex` | `string` | A JS-compatible regex string to validate new instances of this Attribute. Only applies to Attributes of `String` or `TextBox` type.
 `choices` | `string[]` | A list of possible values this Attribute may have. Only applies to Attributes of `Enum` type.
 `uniqueGlobally` | `bool` | Should new instances of this Attribute be unique across all instances of this Attribute?
 `public` | `bool` | When this field is false, unprivileged users will not be able to see the contents of this Attribute on the frontend.
@@ -57,8 +57,9 @@ AttributeInstance relations connect singular values of Attributes to Items.
 Key | Type | Description
 --- | ---- | -----------
 `id` | `int` | Unique numerical identifier for this instance of an attribute.
-`attribute` | `int` | The `id` of the `EquipmentAttribute` that this is an instance of.
+`attribute` | `int` | The `id` of the Attribute that this is an instance of.
 `value` | `string` | The value of this instance of an attribute.
+`itemId` | `int` | The Item that this AttributeInstance belongs to.
 
 ##### AttributeType
 

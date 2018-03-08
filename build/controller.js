@@ -183,55 +183,54 @@ var Controller = /** @class */ (function () {
         };
         this.validateItemBody = function (item, body) {
             var errors = [];
-            if (!body.type)
-                throw Error('No type specified');
-            else {
-                _this.db.getTypeById(body.type).then(function (type) {
-                    if (!type)
-                        errors.push('Non-existent type specified');
-                    else {
-                        for (var _i = 0, _a = type.attributes; _i < _a.length; _i++) {
-                            var attributeSpec = _a[_i];
-                            var attribute = body.attributes.find(function (a) { return a.attributeId == attributeSpec.id; });
-                            if ((!attribute || !attribute.value) && attributeSpec.required && !item) {
-                                errors.push("\"" + attributeSpec.name + "\" requires a value");
-                            }
-                            else {
-                                var value = attribute.value;
-                                switch (attributeSpec.type) {
-                                    case 'Boolean':
-                                        if (value != '1' && value != '0')
-                                            errors.push("\"" + attributeSpec.name + "\" must be either \"1\" or \"0\"");
-                                        break;
-                                    case 'Currency':
-                                        if (!/^(\d)+(\.(\d){2})$/.test(value))
-                                            errors.push("\"" + attributeSpec.name + "\" must be a currency value");
-                                        break;
-                                    case 'Integer':
-                                        if (!/^(\d)+$/.test(value))
-                                            errors.push("\"" + attributeSpec.name + "\" must be an integer");
-                                        break;
-                                    case 'DateTime':
-                                        // TODO: postgres is pretty tolerant of this input
-                                        break;
-                                    case 'String':
-                                    case 'TextBox':
-                                        var re = RegExp(attributeSpec.regex);
-                                        if (!re.test(value))
-                                            errors.push("\"" + attributeSpec.name + "\" must match the regex \"" + attributeSpec.regex + "\"");
-                                        break;
-                                    case 'Enum':
-                                        if (!attributeSpec.choices.contains(value))
-                                            errors.push("\"" + attributeSpec.name + "\" must be one of \"" + attributeSpec.choices.join('", "') + "\"");
-                                        break;
-                                    default:
-                                }
+            return _this.db.getTypeById(body.type).then(function (type) {
+                if (!type)
+                    errors.push('Non-existent type specified');
+                else {
+                    for (var _i = 0, _a = type.attributes; _i < _a.length; _i++) {
+                        var attributeSpec = _a[_i];
+                        var attribute = body.attributes.find(function (a) { return a.attributeId == attributeSpec.id; });
+                        if ((!attribute || !attribute.value) && attributeSpec.required == 'Required' && !item) {
+                            errors.push("\"" + attributeSpec.name + "\" requires a value");
+                        }
+                        else {
+                            var value = attribute.value;
+                            switch (attributeSpec.type) {
+                                case 'Boolean':
+                                    if (value != '1' && value != '0')
+                                        errors.push("\"" + attributeSpec.name + "\" must be either \"1\" or \"0\"");
+                                    break;
+                                case 'Currency':
+                                    if (!/^(\d)+(\.(\d){2})$/.test(value))
+                                        errors.push("\"" + attributeSpec.name + "\" must be a currency value");
+                                    break;
+                                case 'Integer':
+                                    if (!/^(\d)+$/.test(value))
+                                        errors.push("\"" + attributeSpec.name + "\" must be an integer");
+                                    break;
+                                case 'DateTime':
+                                    // TODO: postgres is pretty tolerant of this input
+                                    break;
+                                case 'String':
+                                case 'TextBox':
+                                    // Using RegExes to break up RegExes is silly, but there's no way to create a RegEx from the type
+                                    // of string generated by RegExp.toString() in JavaScript.
+                                    var extractor = /\/(.*)\/([gimuy])/g.exec(attributeSpec.regex);
+                                    var re = RegExp(extractor[1], extractor[2]);
+                                    if (!re.test(value))
+                                        errors.push("\"" + attributeSpec.name + "\" must match the regex \"" + attributeSpec.regex + "\"");
+                                    break;
+                                case 'Enum':
+                                    if (!attributeSpec.choices.find(function (x) { return x == value; }))
+                                        errors.push("\"" + attributeSpec.name + "\" must be one of \"" + attributeSpec.choices.join('", "') + "\"");
+                                    break;
+                                default:
                             }
                         }
                     }
-                });
-            }
-            return bluebird_1.Promise.all(errors);
+                }
+                return errors;
+            });
         };
         this.sendNotFound = function (res) {
             return _this.sendError(res, 'Resource not found', 404);

@@ -56,7 +56,7 @@ var Db = /** @class */ (function () {
             return _this.Type.findAll({
                 where: {
                     name: (_a = {},
-                        _a[Sequelize.Op.like] = '%' + name + '%',
+                        _a[Sequelize.Op.iLike] = '%' + name + '%',
                         _a),
                     deleted: false
                 },
@@ -103,7 +103,7 @@ var Db = /** @class */ (function () {
             return _this.Attribute.findAll({
                 where: {
                     name: (_a = {},
-                        _a[Sequelize.Op.like] = '%' + name + '%',
+                        _a[Sequelize.Op.iLike] = '%' + name + '%',
                         _a),
                     deleted: false,
                 }
