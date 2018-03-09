@@ -41,6 +41,31 @@ var Db = /** @class */ (function () {
                 old.update(item);
             });
         };
+        this.searchItemsByAttributes = function (q) {
+            return _this.sequelize.query('SELECT i.id '
+                + 'FROM items i, "attributeInstances" ai '
+                + 'RIGHT JOIN attributes AS a ON ai.attribute = a.id '
+                + 'WHERE ai."itemId" = i.id AND ai.value ILIKE $q '
+                + "AND (a.type = 'DateTime' OR a.type = 'String' OR a.type = 'Enum' OR a.type = 'TextBox') "
+                + 'GROUP BY i.id;', {
+                type: Sequelize.QueryTypes.SELECT,
+                bind: { q: '%' + q + '%' },
+            }).then(function (items) {
+                return !items.length ? [] : _this.Item.findAll({
+                    where: {
+                        id: (_a = {},
+                            _a[Sequelize.Op.any] = items.map(function (x) { return x.id; }),
+                            _a),
+                        deleted: false
+                    },
+                    include: [
+                        { model: _this.AttributeInstance, as: 'attributes' },
+                        { model: _this.Type, as: 'type' }
+                    ]
+                });
+                var _a;
+            });
+        };
         this.getAvailableTypes = function () {
             return _this.Type.findAll({
                 where: {
@@ -263,14 +288,14 @@ var Db = /** @class */ (function () {
                 primaryKey: true,
                 autoIncrement: true
             },
-            type: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: this.Type,
-                    key: 'id'
-                },
-                allowNull: false
-            },
+            // type: {
+            //     type: Sequelize.INTEGER,
+            //     references: {
+            //         model: this.Type,
+            //         key: 'id'
+            //     },
+            //     allowNull: false
+            // },
             deleted: {
                 type: Sequelize.BOOLEAN,
                 defaultValue: false
@@ -312,6 +337,7 @@ var Db = /** @class */ (function () {
         this.Type.belongsToMany(this.Attribute, {
             through: this.AttributeType
         });
+        this.Item.belongsTo(this.Type);
         this.Item.hasMany(this.AttributeInstance, { as: 'attributes' });
         this.AttributeInstance.belongsTo(this.Item, { as: 'item' });
     };

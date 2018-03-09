@@ -123,7 +123,13 @@ export default class Controller {
     /// Equipment/Item Operations
 
     getItems = (req: Request, res: Response) => {
-        this.db.getAllItems().then((items) => this.sendResponse(res, items))
+        if (req.query.q) {
+            this.db.searchItemsByAttributes(req.query.q).then((items) => {
+                this.sendResponse(res, items);
+            }).catch((e) => this.sendError(res, 'Error while searching', 500, e))
+        } else {
+            this.db.getAllItems().then((items) => this.sendResponse(res, items))
+        }
     }
 
     getItem = (req: Request, res: Response) =>
@@ -134,7 +140,6 @@ export default class Controller {
         else this.validateItemBody(undefined, req.body).then((errors) => {
             if (errors.length) 
                 return this.sendError(res, errors.join(', '))
-            
             this.db.insertItem(req.body)
             .then((item) => { 
                 this.createAttributeInstances(item, req.body.attributes).then((x) =>
@@ -176,7 +181,7 @@ export default class Controller {
 
     validateItemBody = (item: any, body: any) => {
         var errors = []
-        return this.db.getTypeById(body.type).then((type) => {
+        return this.db.getTypeById(body.typeId).then((type) => {
             if (!type) errors.push('Non-existent type specified')
             else {
                 for (var attributeSpec of type.attributes) {
@@ -184,7 +189,7 @@ export default class Controller {
                         (a) => a.attributeId == attributeSpec.id)
                     if ((!attribute || !attribute.value) && attributeSpec.required  == 'Required' && !item) {
                         errors.push(`"${attributeSpec.name}" requires a value`)
-                    } else {
+                    } else if (attribute && attribute.value) {
                         var value = attribute.value;
                         switch (attributeSpec.type) {
                             case 'Boolean':
@@ -217,6 +222,11 @@ export default class Controller {
                             break;
                             default:
                         }
+                    }
+                }
+                for (var attribute of body.attributes) {
+                    if (!type.attributes.find(x => x.id == attribute.attributeId)) {
+                        errors.push(`Attribute with ID ${attribute.attributeId} could not be found on type "${type.name}"`)
                     }
                 }
             }

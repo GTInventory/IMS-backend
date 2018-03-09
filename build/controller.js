@@ -125,7 +125,14 @@ var Controller = /** @class */ (function () {
         };
         /// Equipment/Item Operations
         this.getItems = function (req, res) {
-            _this.db.getAllItems().then(function (items) { return _this.sendResponse(res, items); });
+            if (req.query.q) {
+                _this.db.searchItemsByAttributes(req.query.q).then(function (items) {
+                    _this.sendResponse(res, items);
+                }).catch(function (e) { return _this.sendError(res, 'Error while searching', 500, e); });
+            }
+            else {
+                _this.db.getAllItems().then(function (items) { return _this.sendResponse(res, items); });
+            }
         };
         this.getItem = function (req, res) {
             return _this.db.getItemById(req.params.id).then(function (item) { return _this.sendResponse(res, item); });
@@ -183,7 +190,7 @@ var Controller = /** @class */ (function () {
         };
         this.validateItemBody = function (item, body) {
             var errors = [];
-            return _this.db.getTypeById(body.type).then(function (type) {
+            return _this.db.getTypeById(body.typeId).then(function (type) {
                 if (!type)
                     errors.push('Non-existent type specified');
                 else {
@@ -193,7 +200,7 @@ var Controller = /** @class */ (function () {
                         if ((!attribute || !attribute.value) && attributeSpec.required == 'Required' && !item) {
                             errors.push("\"" + attributeSpec.name + "\" requires a value");
                         }
-                        else {
+                        else if (attribute && attribute.value) {
                             var value = attribute.value;
                             switch (attributeSpec.type) {
                                 case 'Boolean':
@@ -226,6 +233,12 @@ var Controller = /** @class */ (function () {
                                     break;
                                 default:
                             }
+                        }
+                    }
+                    for (var _b = 0, _c = body.attributes; _b < _c.length; _b++) {
+                        var attribute = _c[_b];
+                        if (!type.attributes.find(function (x) { return x.id == attribute.attributeId; })) {
+                            errors.push("Attribute with ID " + attribute.attributeId + " could not be found on type \"" + type.name + "\"");
                         }
                     }
                 }

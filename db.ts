@@ -47,7 +47,7 @@ export default class Db {
     insertItem = (item: any) =>
         this.Item.create(item)
 
-    updateItem = (id: number, item: any) =>
+    updateItem = (id: number, item: any) => // TODO: figure out if this is actually useful
         this.Item.findOne({
             where: {
                 id,
@@ -56,6 +56,28 @@ export default class Db {
         }).then((old: any) => {
             old.update(item)
         })
+        
+    searchItemsByAttributes = (q: string) =>
+        this.sequelize.query('SELECT i.id '
+            + 'FROM items i, "attributeInstances" ai '
+            + 'RIGHT JOIN attributes AS a ON ai.attribute = a.id '
+            + 'WHERE ai."itemId" = i.id AND ai.value ILIKE $q '
+            + "AND (a.type = 'DateTime' OR a.type = 'String' OR a.type = 'Enum' OR a.type = 'TextBox') "
+            + 'GROUP BY i.id;', { 
+                type: Sequelize.QueryTypes.SELECT,
+                bind: {q: '%' + q + '%'} ,
+            }).then((items) => !items.length ? [] : this.Item.findAll({
+                where: {
+                    id: {
+                        [Sequelize.Op.any]: items.map(x => x.id)
+                    },
+                    deleted: false
+                },
+                include: [
+                    {model: this.AttributeInstance, as: 'attributes'},
+                    {model: this.Type, as: 'type'}
+                ]
+            }))
 
     getAvailableTypes = () =>
         this.Type.findAll({
@@ -269,14 +291,14 @@ export default class Db {
                 primaryKey: true,
                 autoIncrement: true
             },
-            type: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: this.Type,
-                    key: 'id'
-                },
-                allowNull: false
-            },
+            // type: {
+            //     type: Sequelize.INTEGER,
+            //     references: {
+            //         model: this.Type,
+            //         key: 'id'
+            //     },
+            //     allowNull: false
+            // },
             deleted: {
                 type: Sequelize.BOOLEAN,
                 defaultValue: false
@@ -322,6 +344,7 @@ export default class Db {
         this.Type.belongsToMany(this.Attribute, { 
             through: this.AttributeType
         })
+        this.Item.belongsTo(this.Type)
         this.Item.hasMany(this.AttributeInstance, { as: 'attributes' })
         this.AttributeInstance.belongsTo(this.Item, { as: 'item' })
     }
