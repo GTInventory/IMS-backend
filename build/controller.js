@@ -197,7 +197,7 @@ var Controller = /** @class */ (function () {
                     for (var _i = 0, _a = type.attributes; _i < _a.length; _i++) {
                         var attributeSpec = _a[_i];
                         var attribute = body.attributes.find(function (a) { return a.attributeId == attributeSpec.id; });
-                        if ((!attribute || !attribute.value) && attributeSpec.required == 'Required' && !item) {
+                        if ((!attribute || !attribute.value) && attributeSpec.attributeType.required == 'Required' && !item) {
                             errors.push("\"" + attributeSpec.name + "\" requires a value");
                         }
                         else if (attribute && attribute.value) {

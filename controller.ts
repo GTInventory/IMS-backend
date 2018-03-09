@@ -187,7 +187,7 @@ export default class Controller {
                 for (var attributeSpec of type.attributes) {
                     var attribute = body.attributes.find(
                         (a) => a.attributeId == attributeSpec.id)
-                    if ((!attribute || !attribute.value) && attributeSpec.required  == 'Required' && !item) {
+                    if ((!attribute || !attribute.value) && attributeSpec.attributeType.required  == 'Required' && !item) {
                         errors.push(`"${attributeSpec.name}" requires a value`)
                     } else if (attribute && attribute.value) {
                         var value = attribute.value;
