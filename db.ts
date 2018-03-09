@@ -12,6 +12,8 @@ export default class Db {
     private Attribute: Sequelize.Model<any, any>
     private Type: Sequelize.Model<any, any>
     private Item: Sequelize.Model<any, any>
+    private ITEM_INCLUDE : any
+    private TYPE_INCLUDE : any
 
     constructor(connString: string) {
         this.sequelize = new Sequelize(connString)
@@ -28,10 +30,7 @@ export default class Db {
             where: {
                 deleted: false
             },
-            include: [
-                {model: this.AttributeInstance, as: 'attributes'},
-                {model: this.Type, as: 'type' }
-            ]
+            include: this.ITEM_INCLUDE
         })
 
     getItemById = (id: number) =>
@@ -40,10 +39,7 @@ export default class Db {
                 deleted: false,
                 id
             },
-            include: [
-                {model: this.AttributeInstance, as: 'attributes'},
-                {model: this.Type, as: 'type' }
-            ]
+            include: this.ITEM_INCLUDE
         })
 
     insertItem = (item: any) =>
@@ -75,10 +71,7 @@ export default class Db {
                     },
                     deleted: false
                 },
-                include: [
-                    {model: this.AttributeInstance, as: 'attributes'},
-                    {model: this.Type, as: 'type'}
-                ]
+                include: this.ITEM_INCLUDE
             }))
 
     getAvailableTypes = () =>
@@ -87,9 +80,7 @@ export default class Db {
                 deleted: false
             },
             order: [['name', 'ASC']],
-            include: [
-                {model: this.Attribute, as: 'attributes'}
-            ]
+            include: this.TYPE_INCLUDE
         })
 
     getTypesWithNameLike = (name: string) =>
@@ -101,9 +92,7 @@ export default class Db {
                 deleted: false
             },
             order: [['name', 'ASC']],
-            include: [
-                {model: this.Attribute, as: 'attributes'}
-            ]
+            include: this.TYPE_INCLUDE
         })
 
     getTypeById = (id: number) =>
@@ -112,9 +101,7 @@ export default class Db {
                 id,
                 deleted: false
             },
-            include: [
-                {model: this.Attribute, as: 'attributes'}
-            ]
+            include: this.TYPE_INCLUDE
         })
  
     insertType = (type: any) =>
@@ -248,14 +235,6 @@ export default class Db {
                 primaryKey: true,
                 autoIncrement: true
             },
-            attribute: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: this.Attribute,
-                    key: 'id'
-                },
-                allowNull: false,
-            },
             value: {
                 type: Sequelize.STRING,
                 defaultValue: ""
@@ -293,14 +272,6 @@ export default class Db {
                 primaryKey: true,
                 autoIncrement: true
             },
-            // type: {
-            //     type: Sequelize.INTEGER,
-            //     references: {
-            //         model: this.Type,
-            //         key: 'id'
-            //     },
-            //     allowNull: false
-            // },
             deleted: {
                 type: Sequelize.BOOLEAN,
                 defaultValue: false
@@ -348,6 +319,18 @@ export default class Db {
         })
         this.Item.belongsTo(this.Type)
         this.Item.hasMany(this.AttributeInstance, { as: 'attributes' })
-        this.AttributeInstance.belongsTo(this.Item, { as: 'item' })
+        this.AttributeInstance.belongsTo(this.Item)
+        this.AttributeInstance.belongsTo(this.Attribute)
+
+            // Definition of standard relations to include with requests.
+        this.ITEM_INCLUDE = [
+            {model: this.AttributeInstance, as: 'attributes', attributes: ['value', 'attributeId', 'updatedAt']},
+            {model: this.Type, as: 'type', include: [
+                {model: this.Attribute, as: 'attributes', attributes: ['id', 'name', 'type']},
+            ], attributes: ['id', 'name', 'nameAttribute', 'deleted']}
+        ]
+        this.TYPE_INCLUDE = [
+            {model: this.Attribute, as: 'attributes'}
+        ]
     }
 }

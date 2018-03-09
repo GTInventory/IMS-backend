@@ -184,7 +184,7 @@ var Controller = /** @class */ (function () {
         };
         this.createAttributeInstances = function (item, attributes) {
             return bluebird_1.Promise.all(attributes.map(function (attribute) { return _this.db.insertAttributeInstance({
-                attribute: attribute.attributeId,
+                attributeId: attribute.attributeId,
                 value: attribute.value
             }); })).then(function (instances) { return item.addAttributes(instances); });
         };

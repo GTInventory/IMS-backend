@@ -175,7 +175,7 @@ export default class Controller {
 
     createAttributeInstances = (item: any, attributes: any[]) =>
         Promise.all(attributes.map((attribute) => this.db.insertAttributeInstance({
-            attribute: attribute.attributeId,
+            attributeId: attribute.attributeId,
             value: attribute.value
         }))).then((instances) => item.addAttributes(instances))
 

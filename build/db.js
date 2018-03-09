@@ -12,10 +12,7 @@ var Db = /** @class */ (function () {
                 where: {
                     deleted: false
                 },
-                include: [
-                    { model: _this.AttributeInstance, as: 'attributes' },
-                    { model: _this.Type, as: 'type' }
-                ]
+                include: _this.ITEM_INCLUDE
             });
         };
         this.getItemById = function (id) {
@@ -24,10 +21,7 @@ var Db = /** @class */ (function () {
                     deleted: false,
                     id: id
                 },
-                include: [
-                    { model: _this.AttributeInstance, as: 'attributes' },
-                    { model: _this.Type, as: 'type' }
-                ]
+                include: _this.ITEM_INCLUDE
             });
         };
         this.insertItem = function (item) {
@@ -60,10 +54,7 @@ var Db = /** @class */ (function () {
                             _a),
                         deleted: false
                     },
-                    include: [
-                        { model: _this.AttributeInstance, as: 'attributes' },
-                        { model: _this.Type, as: 'type' }
-                    ]
+                    include: _this.ITEM_INCLUDE
                 });
                 var _a;
             });
@@ -74,9 +65,7 @@ var Db = /** @class */ (function () {
                     deleted: false
                 },
                 order: [['name', 'ASC']],
-                include: [
-                    { model: _this.Attribute, as: 'attributes' }
-                ]
+                include: _this.TYPE_INCLUDE
             });
         };
         this.getTypesWithNameLike = function (name) {
@@ -88,9 +77,7 @@ var Db = /** @class */ (function () {
                     deleted: false
                 },
                 order: [['name', 'ASC']],
-                include: [
-                    { model: _this.Attribute, as: 'attributes' }
-                ]
+                include: _this.TYPE_INCLUDE
             });
             var _a;
         };
@@ -100,9 +87,7 @@ var Db = /** @class */ (function () {
                     id: id,
                     deleted: false
                 },
-                include: [
-                    { model: _this.Attribute, as: 'attributes' }
-                ]
+                include: _this.TYPE_INCLUDE
             });
         };
         this.insertType = function (type) {
@@ -247,14 +232,6 @@ var Db = /** @class */ (function () {
                 primaryKey: true,
                 autoIncrement: true
             },
-            attribute: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: this.Attribute,
-                    key: 'id'
-                },
-                allowNull: false,
-            },
             value: {
                 type: Sequelize.STRING,
                 defaultValue: ""
@@ -290,14 +267,6 @@ var Db = /** @class */ (function () {
                 primaryKey: true,
                 autoIncrement: true
             },
-            // type: {
-            //     type: Sequelize.INTEGER,
-            //     references: {
-            //         model: this.Type,
-            //         key: 'id'
-            //     },
-            //     allowNull: false
-            // },
             deleted: {
                 type: Sequelize.BOOLEAN,
                 defaultValue: false
@@ -341,7 +310,18 @@ var Db = /** @class */ (function () {
         });
         this.Item.belongsTo(this.Type);
         this.Item.hasMany(this.AttributeInstance, { as: 'attributes' });
-        this.AttributeInstance.belongsTo(this.Item, { as: 'item' });
+        this.AttributeInstance.belongsTo(this.Item);
+        this.AttributeInstance.belongsTo(this.Attribute);
+        // Definition of standard relations to include with requests.
+        this.ITEM_INCLUDE = [
+            { model: this.AttributeInstance, as: 'attributes', attributes: ['value', 'attributeId', 'updatedAt'] },
+            { model: this.Type, as: 'type', include: [
+                    { model: this.Attribute, as: 'attributes', attributes: ['id', 'name', 'type'] },
+                ], attributes: ['id', 'name', 'nameAttribute', 'deleted'] }
+        ];
+        this.TYPE_INCLUDE = [
+            { model: this.Attribute, as: 'attributes' }
+        ];
     };
     return Db;
 }());
