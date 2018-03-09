@@ -46,7 +46,7 @@ An Item represents 1 unique inventory item.
 Key | Type | Description
 --- | ---- | -----------
 `id`| `int` | Unique numerical identifier for this Item.
-`type` | `int` | Th Type this Item belongs to.
+`typeId` | `int` | The Type this Item belongs to.
 `deleted` | `bool` | If this is true, the Item has been soft-deleted and will not be visible to the public.
 `attributes` | `AttributeInstance[]` | All the current Attributes and their values belonging to this Item.
 
