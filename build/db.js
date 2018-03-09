@@ -13,7 +13,8 @@ var Db = /** @class */ (function () {
                     deleted: false
                 },
                 include: [
-                    { model: _this.AttributeInstance, as: 'attributes' }
+                    { model: _this.AttributeInstance, as: 'attributes' },
+                    { model: _this.Type, as: 'type' }
                 ]
             });
         };
@@ -24,7 +25,8 @@ var Db = /** @class */ (function () {
                     id: id
                 },
                 include: [
-                    { model: _this.AttributeInstance, as: 'attributes' }
+                    { model: _this.AttributeInstance, as: 'attributes' },
+                    { model: _this.Type, as: 'type' }
                 ]
             });
         };

@@ -29,7 +29,8 @@ export default class Db {
                 deleted: false
             },
             include: [
-                {model: this.AttributeInstance, as: 'attributes'}
+                {model: this.AttributeInstance, as: 'attributes'},
+                {model: this.Type, as: 'type' }
             ]
         })
 
@@ -40,7 +41,8 @@ export default class Db {
                 id
             },
             include: [
-                {model: this.AttributeInstance, as: 'attributes'}
+                {model: this.AttributeInstance, as: 'attributes'},
+                {model: this.Type, as: 'type' }
             ]
         })
 
