@@ -28,14 +28,14 @@ export default class Controller {
     postAttribute = (req: Request, res: Response) => {
         if (!this.auth.has(Permission.AttributeAdd, req)) this.sendUnauthorized(res)
         else this.db.insertAttribute(req.body)
-            .then((attribute) => { res.redirect('/attribute/' + attribute.id) })
+            .then((attribute) => this.sendResponse(res, { id: attribute.id }))
             .catch((e) => this.sendError(res, 'Error creating attribute.', 500, e))
     }
 
     updateAttribute = (req: Request, res: Response) => {
         if (!this.auth.has(Permission.AttributeEdit, req)) this.sendUnauthorized(res)
         else this.db.updateAttribute(req.params.id, req.body)
-            .then((attribute) => { res.redirect('/attribute/' + req.params.id) })
+            .then((attribute) => this.sendResponse(res, { id: req.params.id}))
             .catch((e) => this.sendError(res, 'Error updating attribute', 500, e))
     }
 
@@ -74,7 +74,7 @@ export default class Controller {
                             attribute.attributeId = attribute.id
                             type.addAttribute(attribute.id, { through: attribute })
                         }
-                        res.redirect('/type/' + type.id) 
+                        this.sendResponse(res, { id: type.id })
                     } catch (e) {
                         if (this.isKeyError(e)) this.sendError(res, '')
                     }
@@ -95,7 +95,7 @@ export default class Controller {
                     else {
                         req.body.attribute.attributeId = req.body.attribute.id
                         type.addAttribute(req.body.attribute.id, { through: req.body.attribute }).then((x) => {
-                            res.redirect('/type/' + req.params.id)
+                            this.sendResponse(res, { id: type.id })
                         }).catch((e) => {
                             if (this.isKeyError(e)) this.sendError(res, 'Referenced attribute does not exist')
                             else this.sendError(res, 'Error adding attribute', 500, e)
@@ -109,7 +109,7 @@ export default class Controller {
     updateType = (req: Request, res: Response) => {
         if (!this.auth.has(Permission.TypeEdit, req)) this.sendUnauthorized(res)
         else this.db.updateType(req.params.id, req.body)
-            .then((type) => { res.redirect('/type/' + req.params.id) })
+            .then((type) => { this.sendResponse(res, { id: req.params.id }) })
             .catch((e) => this.sendError(res, 'Error updating type', 500, e))
     }
 
@@ -143,7 +143,7 @@ export default class Controller {
             this.db.insertItem(req.body)
             .then((item) => { 
                 this.createAttributeInstances(item, req.body.attributes).then((x) =>
-                    res.redirect('/item/' + item.id))
+                    this.sendResponse(res, { id: item.id }))
             })
             .catch((e) => this.sendError(res, 'Error creating item', 500, e))
         })
@@ -159,7 +159,7 @@ export default class Controller {
                     this.db.updateItem(item.id, req.body)
                     .then((tem) => { 
                         this.createAttributeInstances(item, req.body.attributes).then((x) =>
-                            res.redirect('/item/' + item.id))
+                            this.sendResponse(res, { id: item.id }))
                     })
                     .catch((e) => this.sendError(res, 'Error creating item', 500, e))
             })

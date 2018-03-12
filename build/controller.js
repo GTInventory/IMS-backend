@@ -23,7 +23,7 @@ var Controller = /** @class */ (function () {
                 _this.sendUnauthorized(res);
             else
                 _this.db.insertAttribute(req.body)
-                    .then(function (attribute) { res.redirect('/attribute/' + attribute.id); })
+                    .then(function (attribute) { return _this.sendResponse(res, { id: attribute.id }); })
                     .catch(function (e) { return _this.sendError(res, 'Error creating attribute.', 500, e); });
         };
         this.updateAttribute = function (req, res) {
@@ -31,7 +31,7 @@ var Controller = /** @class */ (function () {
                 _this.sendUnauthorized(res);
             else
                 _this.db.updateAttribute(req.params.id, req.body)
-                    .then(function (attribute) { res.redirect('/attribute/' + req.params.id); })
+                    .then(function (attribute) { return _this.sendResponse(res, { id: req.params.id }); })
                     .catch(function (e) { return _this.sendError(res, 'Error updating attribute', 500, e); });
         };
         this.deleteAttribute = function (req, res) {
@@ -71,7 +71,7 @@ var Controller = /** @class */ (function () {
                             attribute.attributeId = attribute.id;
                             type.addAttribute(attribute.id, { through: attribute });
                         }
-                        res.redirect('/type/' + type.id);
+                        _this.sendResponse(res, { id: type.id });
                     }
                     catch (e) {
                         if (_this.isKeyError(e))
@@ -96,7 +96,7 @@ var Controller = /** @class */ (function () {
                             else {
                                 req.body.attribute.attributeId = req.body.attribute.id;
                                 type.addAttribute(req.body.attribute.id, { through: req.body.attribute }).then(function (x) {
-                                    res.redirect('/type/' + req.params.id);
+                                    _this.sendResponse(res, { id: type.id });
                                 }).catch(function (e) {
                                     if (_this.isKeyError(e))
                                         _this.sendError(res, 'Referenced attribute does not exist');
@@ -112,7 +112,7 @@ var Controller = /** @class */ (function () {
                 _this.sendUnauthorized(res);
             else
                 _this.db.updateType(req.params.id, req.body)
-                    .then(function (type) { res.redirect('/type/' + req.params.id); })
+                    .then(function (type) { _this.sendResponse(res, { id: req.params.id }); })
                     .catch(function (e) { return _this.sendError(res, 'Error updating type', 500, e); });
         };
         this.deleteType = function (req, res) {
@@ -147,7 +147,7 @@ var Controller = /** @class */ (function () {
                     _this.db.insertItem(req.body)
                         .then(function (item) {
                         _this.createAttributeInstances(item, req.body.attributes).then(function (x) {
-                            return res.redirect('/item/' + item.id);
+                            return _this.sendResponse(res, { id: item.id });
                         });
                     })
                         .catch(function (e) { return _this.sendError(res, 'Error creating item', 500, e); });
@@ -167,7 +167,7 @@ var Controller = /** @class */ (function () {
                             _this.db.updateItem(item.id, req.body)
                                 .then(function (tem) {
                                 _this.createAttributeInstances(item, req.body.attributes).then(function (x) {
-                                    return res.redirect('/item/' + item.id);
+                                    return _this.sendResponse(res, { id: item.id });
                                 });
                             })
                                 .catch(function (e) { return _this.sendError(res, 'Error creating item', 500, e); });
