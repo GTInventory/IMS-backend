@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var authorizer_1 = require("./authorizer");
-var bluebird_1 = require("sequelize/node_modules/bluebird");
+var bluebird_1 = require("bluebird");
 /**
  * Fulfills incoming router requests.
  */
