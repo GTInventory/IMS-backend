@@ -1,7 +1,7 @@
 import Db from './db'
 import { Request, Response } from 'express'
 import { Authorizer, Permission } from './authorizer'
-import { Promise } from 'sequelize/node_modules/bluebird';
+import { Promise } from 'bluebird';
 
 /**
  * Fulfills incoming router requests.
