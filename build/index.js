@@ -30,6 +30,7 @@ app.post('/type/:id(\\d+)/attribute', controller.postTypeAttribute);
 app.post('/type/:id(\\d+)/delete', controller.deleteType);
 app.get('/item', controller.getItems);
 app.get('/item/:id(\\d+)', controller.getItem);
+app.post('/item/multi', controller.postItems);
 app.post('/item', controller.postItem);
 app.post('/item/:id(\\d+)', controller.updateItem);
 app.post('/item/:id(\\d+)/delete', controller.deleteItem);

@@ -149,6 +149,29 @@ export default class Controller {
         })
     }
 
+    postItems = (req: Request, res: Response) => {
+        if (!this.auth.has(Permission.ItemAdd, req)) this.sendUnauthorized(res)
+        else {
+            Promise.all(req.body.map((item) => this.validateItemBody(undefined, item))).then((errors) => {
+                if (errors.reduce((prev, cur, i) => cur) > 0) {
+                    this.sendError(res, errors.map((errorSet) => (<any[]> errorSet).join(', ')).join('; '));
+                } else {
+                    let inserted = [];
+                    req.body.forEach(item => {
+                        this.db.insertItem(item).then((createdItem) => {
+                            this.createAttributeInstances(createdItem, item.attributes).then((x) => {
+                                inserted.push(createdItem.id)
+                                if (inserted.length == req.body.length) {
+                                    this.sendResponse(res, {ids: inserted})
+                                }
+                            })
+                        })
+                    });
+                }
+            })
+        }
+    }
+
     updateItem = (req: Request, res: Response) => {
         if (!this.auth.has(Permission.ItemEdit, req)) this.sendUnauthorized(res)
         else this.db.getItemById(req.params.id).then((item) => {

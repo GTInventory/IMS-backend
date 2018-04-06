@@ -153,6 +153,30 @@ var Controller = /** @class */ (function () {
                         .catch(function (e) { return _this.sendError(res, 'Error creating item', 500, e); });
                 });
         };
+        this.postItems = function (req, res) {
+            if (!_this.auth.has(authorizer_1.Permission.ItemAdd, req))
+                _this.sendUnauthorized(res);
+            else {
+                bluebird_1.Promise.all(req.body.map(function (item) { return _this.validateItemBody(undefined, item); })).then(function (errors) {
+                    if (errors.reduce(function (prev, cur, i) { return cur; }) > 0) {
+                        _this.sendError(res, errors.map(function (errorSet) { return errorSet.join(', '); }).join('; '));
+                    }
+                    else {
+                        var inserted_1 = [];
+                        req.body.forEach(function (item) {
+                            _this.db.insertItem(item).then(function (createdItem) {
+                                _this.createAttributeInstances(createdItem, item.attributes).then(function (x) {
+                                    inserted_1.push(createdItem.id);
+                                    if (inserted_1.length == req.body.length) {
+                                        _this.sendResponse(res, { ids: inserted_1 });
+                                    }
+                                });
+                            });
+                        });
+                    }
+                });
+            }
+        };
         this.updateItem = function (req, res) {
             if (!_this.auth.has(authorizer_1.Permission.ItemEdit, req))
                 _this.sendUnauthorized(res);
