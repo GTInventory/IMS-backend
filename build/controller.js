@@ -23,24 +23,21 @@ var Controller = /** @class */ (function () {
                 _this.sendUnauthorized(res);
             else
                 _this.db.insertAttribute(req.body)
-                    .then(function (attribute) { return _this.sendResponse(res, { id: attribute.id }); })
-                    .catch(function (e) { return _this.sendError(res, 'Error creating attribute.', 500, e); });
+                    .then(function (attribute) { return _this.sendResponse(res, { id: attribute.id }); });
         };
         this.updateAttribute = function (req, res) {
             if (!_this.auth.has(authorizer_1.Permission.AttributeEdit, req))
                 _this.sendUnauthorized(res);
             else
                 _this.db.updateAttribute(req.params.id, req.body)
-                    .then(function (attribute) { return _this.sendResponse(res, { id: req.params.id }); })
-                    .catch(function (e) { return _this.sendError(res, 'Error updating attribute', 500, e); });
+                    .then(function (attribute) { return _this.sendResponse(res, { id: req.params.id }); });
         };
         this.deleteAttribute = function (req, res) {
             if (!_this.auth.has(authorizer_1.Permission.AttributeDelete, req))
                 _this.sendUnauthorized(res);
             else
                 _this.db.updateAttribute(req.params.id, { deleted: true })
-                    .then(function (attribute) { _this.sendResponse(res, { deleted: true }); })
-                    .catch(function (e) { return _this.sendError(res, 'Error deleting attribute', 500, e); });
+                    .then(function (attribute) { _this.sendResponse(res, { deleted: true }); });
         };
         /// Type Operations
         // TODO: modify so some people can see unavailable equipment types?
@@ -77,8 +74,7 @@ var Controller = /** @class */ (function () {
                         if (_this.isKeyError(e))
                             _this.sendError(res, '');
                     }
-                })
-                    .catch(function (e) { return _this.sendError(res, 'Error creating type', 500, e); });
+                });
             })
                 .catch(function (e) { return _this.sendError(res, 'The referenced attributes are not valid'); });
         };
@@ -112,23 +108,21 @@ var Controller = /** @class */ (function () {
                 _this.sendUnauthorized(res);
             else
                 _this.db.updateType(req.params.id, req.body)
-                    .then(function (type) { _this.sendResponse(res, { id: req.params.id }); })
-                    .catch(function (e) { return _this.sendError(res, 'Error updating type', 500, e); });
+                    .then(function (type) { _this.sendResponse(res, { id: req.params.id }); });
         };
         this.deleteType = function (req, res) {
             if (!_this.auth.has(authorizer_1.Permission.TypeDelete, req))
                 _this.sendUnauthorized(res);
             else
                 _this.db.updateType(req.params.id, { deleted: true })
-                    .then(function (type) { _this.sendResponse(res, { deleted: true }); })
-                    .catch(function (e) { return _this.sendError(res, 'Error deleting type', 500, e); });
+                    .then(function (type) { _this.sendResponse(res, { deleted: true }); });
         };
         /// Equipment/Item Operations
         this.getItems = function (req, res) {
             if (req.query.q) {
                 _this.db.searchItemsByAttributes(req.query.q).then(function (items) {
                     _this.sendResponse(res, items);
-                }).catch(function (e) { return _this.sendError(res, 'Error while searching', 500, e); });
+                });
             }
             else {
                 _this.db.getAllItems().then(function (items) { return _this.sendResponse(res, items); });
@@ -149,8 +143,7 @@ var Controller = /** @class */ (function () {
                         _this.createAttributeInstances(item, req.body.attributes).then(function (x) {
                             return _this.sendResponse(res, { id: item.id });
                         });
-                    })
-                        .catch(function (e) { return _this.sendError(res, 'Error creating item', 500, e); });
+                    });
                 });
         };
         this.postItems = function (req, res) {
@@ -193,8 +186,7 @@ var Controller = /** @class */ (function () {
                                 _this.createAttributeInstances(item, req.body.attributes).then(function (x) {
                                     return _this.sendResponse(res, { id: item.id });
                                 });
-                            })
-                                .catch(function (e) { return _this.sendError(res, 'Error creating item', 500, e); });
+                            });
                         });
                 });
         };
@@ -203,8 +195,7 @@ var Controller = /** @class */ (function () {
                 _this.sendUnauthorized(res);
             else
                 _this.db.updateItem(req.params.id, { deleted: true })
-                    .then(function (item) { _this.sendResponse(res, { deleted: true }); })
-                    .catch(function (e) { return _this.sendError(res, 'Error deleting item', 500, e); });
+                    .then(function (item) { _this.sendResponse(res, { deleted: true }); });
         };
         this.createAttributeInstances = function (item, attributes) {
             return bluebird_1.Promise.all(attributes.map(function (attribute) { return _this.db.insertAttributeInstance({

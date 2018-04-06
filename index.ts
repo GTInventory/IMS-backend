@@ -42,5 +42,9 @@ app.use(function (req, res, next) {
     controller.sendNotFound(res)
 })
 
+app.use(function(err, req, res, next) {
+    controller.sendError(res, "An unhandled exception occurred while trying to process your request.", 500, err)
+})
+
 app.listen(process.env.PORT || 8080,
     () => console.log('Listening on port ' + (process.env.PORT || 8080)))

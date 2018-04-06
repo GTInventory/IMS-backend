@@ -29,21 +29,18 @@ export default class Controller {
         if (!this.auth.has(Permission.AttributeAdd, req)) this.sendUnauthorized(res)
         else this.db.insertAttribute(req.body)
             .then((attribute) => this.sendResponse(res, { id: attribute.id }))
-            .catch((e) => this.sendError(res, 'Error creating attribute.', 500, e))
     }
 
     updateAttribute = (req: Request, res: Response) => {
         if (!this.auth.has(Permission.AttributeEdit, req)) this.sendUnauthorized(res)
         else this.db.updateAttribute(req.params.id, req.body)
             .then((attribute) => this.sendResponse(res, { id: req.params.id}))
-            .catch((e) => this.sendError(res, 'Error updating attribute', 500, e))
     }
 
     deleteAttribute = (req: Request, res: Response) => {
         if (!this.auth.has(Permission.AttributeDelete, req)) this.sendUnauthorized(res)
         else this.db.updateAttribute(req.params.id, { deleted: true })
             .then((attribute) => { this.sendResponse(res, { deleted: true }) })
-            .catch((e) => this.sendError(res, 'Error deleting attribute', 500, e))
     }
 
     /// Type Operations
@@ -79,7 +76,6 @@ export default class Controller {
                         if (this.isKeyError(e)) this.sendError(res, '')
                     }
                 })
-                .catch((e) => this.sendError(res, 'Error creating type', 500, e))
             })
             .catch((e) => this.sendError(res, 'The referenced attributes are not valid'))
         }
@@ -110,14 +106,12 @@ export default class Controller {
         if (!this.auth.has(Permission.TypeEdit, req)) this.sendUnauthorized(res)
         else this.db.updateType(req.params.id, req.body)
             .then((type) => { this.sendResponse(res, { id: req.params.id }) })
-            .catch((e) => this.sendError(res, 'Error updating type', 500, e))
     }
 
     deleteType = (req: Request, res: Response) => {
         if (!this.auth.has(Permission.TypeDelete, req)) this.sendUnauthorized(res)
         else this.db.updateType(req.params.id, { deleted: true })
             .then((type) => { this.sendResponse(res, { deleted: true }) })
-            .catch((e) => this.sendError(res, 'Error deleting type', 500, e))
     }
 
     /// Equipment/Item Operations
@@ -126,7 +120,7 @@ export default class Controller {
         if (req.query.q) {
             this.db.searchItemsByAttributes(req.query.q).then((items) => {
                 this.sendResponse(res, items);
-            }).catch((e) => this.sendError(res, 'Error while searching', 500, e))
+            })
         } else {
             this.db.getAllItems().then((items) => this.sendResponse(res, items))
         }
@@ -145,7 +139,6 @@ export default class Controller {
                 this.createAttributeInstances(item, req.body.attributes).then((x) =>
                     this.sendResponse(res, { id: item.id }))
             })
-            .catch((e) => this.sendError(res, 'Error creating item', 500, e))
         })
     }
 
@@ -184,7 +177,6 @@ export default class Controller {
                         this.createAttributeInstances(item, req.body.attributes).then((x) =>
                             this.sendResponse(res, { id: item.id }))
                     })
-                    .catch((e) => this.sendError(res, 'Error creating item', 500, e))
             })
         })
     }
@@ -193,7 +185,6 @@ export default class Controller {
         if (!this.auth.has(Permission.ItemDelete, req)) this.sendUnauthorized(res)
         else this.db.updateItem(req.params.id, { deleted: true })
             .then((item) => { this.sendResponse(res, { deleted: true }) })
-            .catch((e) => this.sendError(res, 'Error deleting item', 500, e))
     }
 
     createAttributeInstances = (item: any, attributes: any[]) =>
@@ -266,7 +257,7 @@ export default class Controller {
      * `code` is the HTTP status code sent back. Default: 500
      * `debug` is optional debugging content that will be sent back if environment var `DEBUG` is set.
      */
-    private sendError = (res: Response, err: string, code?: number, debug?: any) =>
+    sendError = (res: Response, err: string, code?: number, debug?: any) =>
         res.json({
             'success': false,
             'error': err,
