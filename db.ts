@@ -1,5 +1,6 @@
 import * as Sequelize from 'sequelize'
 import { text } from 'body-parser'
+import { Promise } from 'bluebird';
 
 /**
  * Magical database class. Initializes Sequelize database layer and performs database operations.
@@ -25,11 +26,14 @@ export default class Db {
         })
     }
 
-    getAllItems = () =>
+    getAllItems = (offset: number, limit: number) =>
         this.Item.findAll({
             where: {
                 deleted: false
             },
+            offset,
+            limit,
+            order: [['id', 'ASC']],
             include: this.ITEM_INCLUDE
         })
 
@@ -55,35 +59,49 @@ export default class Db {
             old.update(item)
         })
         
-    searchItemsByAttributes = (q: string) =>
+    searchItemsByAttributes = (q: string, offset: number, limit: number) =>
+        // First we use a raw query to find the applicable IDs.
+        // Then we trust Sequelize to make an efficient query based on that
+        // and pull in related data into models.
         this.sequelize.query('SELECT i.id '
             + 'FROM items i, "attributeInstances" ai '
-            + 'RIGHT JOIN attributes AS a ON ai.attribute = a.id '
-            + 'WHERE ai."itemId" = i.id AND ai.value ILIKE $q '
+            + 'RIGHT JOIN attributes AS a ON ai."attributeId" = a.id '
+            + 'WHERE ai."itemId" = i.id AND ai.value ILIKE $q AND i.deleted = false '
             + "AND (a.type = 'DateTime' OR a.type = 'String' OR a.type = 'Enum' OR a.type = 'TextBox') "
-            + 'GROUP BY i.id;', { 
+            + 'GROUP BY i.id '
+            + 'ORDER BY i.id '
+            + "LIMIT $limit OFFSET $offset;", { 
                 type: Sequelize.QueryTypes.SELECT,
-                bind: {q: '%' + q + '%'} ,
-            }).then((items) => !items.length ? [] : this.Item.findAll({
+                bind: {
+                    q: '%' + q + '%',
+                    limit: parseInt(limit.toString()),
+                    offset: parseInt(offset.toString())
+                },
+            }).then((items) => items.length == 0? Promise.resolve([]) : this.Item.findAll({
                 where: {
                     id: {
                         [Sequelize.Op.any]: items.map(x => x.id)
                     },
-                    deleted: false
+                    deleted: false,
                 },
+                order: [['id', 'ASC']],
+                limit,
+                offset,
                 include: this.ITEM_INCLUDE
             }))
 
-    getAvailableTypes = () =>
+    getAvailableTypes = (offset: number, limit: number) =>
         this.Type.findAll({
             where: {
                 deleted: false
             },
             order: [['name', 'ASC']],
-            include: this.TYPE_INCLUDE
+            include: this.TYPE_INCLUDE,
+            offset,
+            limit
         })
 
-    getTypesWithNameLike = (name: string) =>
+    getTypesWithNameLike = (name: string, offset: number, limit: number) =>
         this.Type.findAll({
             where: {
                 name: {
@@ -92,7 +110,9 @@ export default class Db {
                 deleted: false
             },
             order: [['name', 'ASC']],
-            include: this.TYPE_INCLUDE
+            include: this.TYPE_INCLUDE,
+            offset,
+            limit
         })
 
     getTypeById = (id: number) =>
@@ -117,22 +137,26 @@ export default class Db {
             old.update(type)
         })
 
-    getAttributes = () =>
+    getAttributes = (offset: number, limit: number) =>
         this.Attribute.findAll({
             where: {
                 deleted: false
             },
-            order: [['name', 'ASC']]
+            order: [['name', 'ASC']],
+            offset,
+            limit
         })
 
-    getAttributesWithNameLike = (name: string) =>
+    getAttributesWithNameLike = (name: string, offset: number, limit: number) =>
         this.Attribute.findAll({
             where: {
                 name: {
                     [Sequelize.Op.iLike]: '%' + name + '%'
                 },
                 deleted: false,
-            }
+            },
+            offset,
+            limit
         })
 
     validateAttributeIds = (ids: number[]) =>

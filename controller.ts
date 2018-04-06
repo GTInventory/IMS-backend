@@ -3,6 +3,9 @@ import { Request, Response } from 'express'
 import { Authorizer, Permission } from './authorizer'
 import { Promise } from 'bluebird';
 
+const DEFAULT_LIMIT = 50; // Default # of items to return
+const MAX_LIMIT = 1000; // Maximum permissible limit
+
 /**
  * Fulfills incoming router requests.
  */
@@ -18,8 +21,9 @@ export default class Controller {
     /// Attribute Operations
 
     getAttributes = (req: Request, res: Response) => {
-        if (req.query.q !== undefined) this.db.getAttributesWithNameLike(req.query.q).then((attributes) => this.sendResponse(res, attributes))
-        else this.db.getAttributes().then((attributes) => this.sendResponse(res, attributes))
+        if (req.query.q !== undefined) this.db.getAttributesWithNameLike(req.query.q, req.query.start, req.query.limit)
+            .then((attributes) => this.sendResponse(res, attributes))
+        else this.db.getAttributes(req.query.start, req.query.limit).then((attributes) => this.sendResponse(res, attributes))
     }
 
     getAttribute = (req: Request, res: Response) =>
@@ -47,8 +51,9 @@ export default class Controller {
 
     // TODO: modify so some people can see unavailable equipment types?
     getTypes = (req: Request, res: Response) => {
-        if (req.query.q !== undefined) this.db.getTypesWithNameLike(req.query.q).then((types) => this.sendResponse(res, types))
-        else this.db.getAvailableTypes().then((types) => this.sendResponse(res, types))
+        if (req.query.q !== undefined) this.db.getTypesWithNameLike(req.query.q, req.query.start, req.query.limit)
+            .then((types) => this.sendResponse(res, types))
+        else this.db.getAvailableTypes(req.query.start, req.query.limit).then((types) => this.sendResponse(res, types))
     }
 
     getType = (req: Request, res: Response) =>
@@ -118,11 +123,11 @@ export default class Controller {
 
     getItems = (req: Request, res: Response) => {
         if (req.query.q) {
-            this.db.searchItemsByAttributes(req.query.q).then((items) => {
+            this.db.searchItemsByAttributes(req.query.q, req.query.start, req.query.limit).then((items) => {
                 this.sendResponse(res, items);
             })
         } else {
-            this.db.getAllItems().then((items) => this.sendResponse(res, items))
+            this.db.getAllItems(req.query.start, req.query.limit).then((items) => this.sendResponse(res, items))
         }
     }
 
@@ -288,4 +293,11 @@ export default class Controller {
      */
     private isKeyError = (e: any) =>
         e && e.name && e.name == "SequelizeForeignKeyConstraintError"
+
+    paginationMiddleware = (req: Request, res: Response, next) => {
+        if (!req.query.start || req.query.start < 0) req.query.start = 0;
+        if (!req.query.limit || req.query.limit < 0) req.query.limit = DEFAULT_LIMIT;
+        else if(req.query.limit > MAX_LIMIT) req.query.limit = MAX_LIMIT;
+        next()
+    }
 }

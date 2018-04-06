@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var authorizer_1 = require("./authorizer");
 var bluebird_1 = require("bluebird");
+var DEFAULT_LIMIT = 50; // Default # of items to return
+var MAX_LIMIT = 1000; // Maximum permissible limit
 /**
  * Fulfills incoming router requests.
  */
@@ -11,9 +13,10 @@ var Controller = /** @class */ (function () {
         /// Attribute Operations
         this.getAttributes = function (req, res) {
             if (req.query.q !== undefined)
-                _this.db.getAttributesWithNameLike(req.query.q).then(function (attributes) { return _this.sendResponse(res, attributes); });
+                _this.db.getAttributesWithNameLike(req.query.q, req.query.start, req.query.limit)
+                    .then(function (attributes) { return _this.sendResponse(res, attributes); });
             else
-                _this.db.getAttributes().then(function (attributes) { return _this.sendResponse(res, attributes); });
+                _this.db.getAttributes(req.query.start, req.query.limit).then(function (attributes) { return _this.sendResponse(res, attributes); });
         };
         this.getAttribute = function (req, res) {
             return _this.db.getAttributeById(req.params.id).then(function (attribute) { return _this.sendResponse(res, attribute); });
@@ -43,9 +46,10 @@ var Controller = /** @class */ (function () {
         // TODO: modify so some people can see unavailable equipment types?
         this.getTypes = function (req, res) {
             if (req.query.q !== undefined)
-                _this.db.getTypesWithNameLike(req.query.q).then(function (types) { return _this.sendResponse(res, types); });
+                _this.db.getTypesWithNameLike(req.query.q, req.query.start, req.query.limit)
+                    .then(function (types) { return _this.sendResponse(res, types); });
             else
-                _this.db.getAvailableTypes().then(function (types) { return _this.sendResponse(res, types); });
+                _this.db.getAvailableTypes(req.query.start, req.query.limit).then(function (types) { return _this.sendResponse(res, types); });
         };
         this.getType = function (req, res) {
             return _this.db.getTypeById(req.params.id).then(function (type) {
@@ -120,12 +124,12 @@ var Controller = /** @class */ (function () {
         /// Equipment/Item Operations
         this.getItems = function (req, res) {
             if (req.query.q) {
-                _this.db.searchItemsByAttributes(req.query.q).then(function (items) {
+                _this.db.searchItemsByAttributes(req.query.q, req.query.start, req.query.limit).then(function (items) {
                     _this.sendResponse(res, items);
                 });
             }
             else {
-                _this.db.getAllItems().then(function (items) { return _this.sendResponse(res, items); });
+                _this.db.getAllItems(req.query.start, req.query.limit).then(function (items) { return _this.sendResponse(res, items); });
             }
         };
         this.getItem = function (req, res) {
@@ -301,6 +305,15 @@ var Controller = /** @class */ (function () {
          */
         this.isKeyError = function (e) {
             return e && e.name && e.name == "SequelizeForeignKeyConstraintError";
+        };
+        this.paginationMiddleware = function (req, res, next) {
+            if (!req.query.start || req.query.start < 0)
+                req.query.start = 0;
+            if (!req.query.limit || req.query.limit < 0)
+                req.query.limit = DEFAULT_LIMIT;
+            else if (req.query.limit > MAX_LIMIT)
+                req.query.limit = MAX_LIMIT;
+            next();
         };
         this.db = db;
         this.auth = new authorizer_1.Authorizer();

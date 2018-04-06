@@ -1,17 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Sequelize = require("sequelize");
+var bluebird_1 = require("bluebird");
 /**
  * Magical database class. Initializes Sequelize database layer and performs database operations.
  */
 var Db = /** @class */ (function () {
     function Db(connString) {
         var _this = this;
-        this.getAllItems = function () {
+        this.getAllItems = function (offset, limit) {
             return _this.Item.findAll({
                 where: {
                     deleted: false
                 },
+                offset: offset,
+                limit: limit,
+                order: [['id', 'ASC']],
                 include: _this.ITEM_INCLUDE
             });
         };
@@ -37,38 +41,52 @@ var Db = /** @class */ (function () {
                 old.update(item);
             });
         };
-        this.searchItemsByAttributes = function (q) {
+        this.searchItemsByAttributes = function (q, offset, limit) {
+            // First we use a raw query to find the applicable IDs.
+            // Then we trust Sequelize to make an efficient query based on that
+            // and pull in related data into models.
             return _this.sequelize.query('SELECT i.id '
                 + 'FROM items i, "attributeInstances" ai '
-                + 'RIGHT JOIN attributes AS a ON ai.attribute = a.id '
-                + 'WHERE ai."itemId" = i.id AND ai.value ILIKE $q '
+                + 'RIGHT JOIN attributes AS a ON ai."attributeId" = a.id '
+                + 'WHERE ai."itemId" = i.id AND ai.value ILIKE $q AND i.deleted = false '
                 + "AND (a.type = 'DateTime' OR a.type = 'String' OR a.type = 'Enum' OR a.type = 'TextBox') "
-                + 'GROUP BY i.id;', {
+                + 'GROUP BY i.id '
+                + 'ORDER BY i.id '
+                + "LIMIT $limit OFFSET $offset;", {
                 type: Sequelize.QueryTypes.SELECT,
-                bind: { q: '%' + q + '%' },
+                bind: {
+                    q: '%' + q + '%',
+                    limit: parseInt(limit.toString()),
+                    offset: parseInt(offset.toString())
+                },
             }).then(function (items) {
-                return !items.length ? [] : _this.Item.findAll({
+                return items.length == 0 ? bluebird_1.Promise.resolve([]) : _this.Item.findAll({
                     where: {
                         id: (_a = {},
                             _a[Sequelize.Op.any] = items.map(function (x) { return x.id; }),
                             _a),
-                        deleted: false
+                        deleted: false,
                     },
+                    order: [['id', 'ASC']],
+                    limit: limit,
+                    offset: offset,
                     include: _this.ITEM_INCLUDE
                 });
                 var _a;
             });
         };
-        this.getAvailableTypes = function () {
+        this.getAvailableTypes = function (offset, limit) {
             return _this.Type.findAll({
                 where: {
                     deleted: false
                 },
                 order: [['name', 'ASC']],
-                include: _this.TYPE_INCLUDE
+                include: _this.TYPE_INCLUDE,
+                offset: offset,
+                limit: limit
             });
         };
-        this.getTypesWithNameLike = function (name) {
+        this.getTypesWithNameLike = function (name, offset, limit) {
             return _this.Type.findAll({
                 where: {
                     name: (_a = {},
@@ -77,7 +95,9 @@ var Db = /** @class */ (function () {
                     deleted: false
                 },
                 order: [['name', 'ASC']],
-                include: _this.TYPE_INCLUDE
+                include: _this.TYPE_INCLUDE,
+                offset: offset,
+                limit: limit
             });
             var _a;
         };
@@ -103,22 +123,26 @@ var Db = /** @class */ (function () {
                 old.update(type);
             });
         };
-        this.getAttributes = function () {
+        this.getAttributes = function (offset, limit) {
             return _this.Attribute.findAll({
                 where: {
                     deleted: false
                 },
-                order: [['name', 'ASC']]
+                order: [['name', 'ASC']],
+                offset: offset,
+                limit: limit
             });
         };
-        this.getAttributesWithNameLike = function (name) {
+        this.getAttributesWithNameLike = function (name, offset, limit) {
             return _this.Attribute.findAll({
                 where: {
                     name: (_a = {},
                         _a[Sequelize.Op.iLike] = '%' + name + '%',
                         _a),
                     deleted: false,
-                }
+                },
+                offset: offset,
+                limit: limit
             });
             var _a;
         };
