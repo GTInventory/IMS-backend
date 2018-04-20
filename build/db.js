@@ -31,6 +31,19 @@ var Db = /** @class */ (function () {
         this.insertItem = function (item) {
             return _this.Item.create(item);
         };
+        this.insertItems = function (items) {
+            return bluebird_1.Promise.all(items.map(function (item) {
+                return _this.insertItem(item).then(function (itemO) {
+                    return _this.insertAttributeInstances(item.attributes.map(function (attr) {
+                        return {
+                            attributeId: attr.attributeId,
+                            value: attr.value,
+                            itemId: itemO.id
+                        };
+                    })).thenReturn(itemO);
+                });
+            }));
+        };
         this.updateItem = function (id, item) {
             return _this.Item.findOne({
                 where: {
@@ -184,6 +197,9 @@ var Db = /** @class */ (function () {
         this.insertAttributeInstance = function (attributeInstance) {
             return _this.AttributeInstance.create(attributeInstance);
         };
+        this.insertAttributeInstances = function (attributeInstances) {
+            return _this.AttributeInstance.bulkCreate(attributeInstances);
+        };
         this.checkAttributesForUniqueness = function (attributes) {
             return _this.AttributeInstance.findOne({
                 where: (_a = {},
@@ -260,6 +276,8 @@ var Db = /** @class */ (function () {
                 type: Sequelize.STRING,
                 defaultValue: ""
             },
+        }, {
+            timestamps: false
         });
         this.Type = this.sequelize.define('type', {
             id: {
@@ -325,6 +343,8 @@ var Db = /** @class */ (function () {
                 type: Sequelize.BOOLEAN,
                 defaultValue: false
             }
+        }, {
+            timestamps: false
         });
         this.Attribute.belongsToMany(this.Type, {
             through: this.AttributeType
@@ -338,7 +358,7 @@ var Db = /** @class */ (function () {
         this.AttributeInstance.belongsTo(this.Attribute);
         // Definition of standard relations to include with requests.
         this.ITEM_INCLUDE = [
-            { model: this.AttributeInstance, as: 'attributes', attributes: ['value', 'attributeId', 'updatedAt'] },
+            { model: this.AttributeInstance, as: 'attributes', attributes: ['value', 'attributeId'] },
             { model: this.Type, as: 'type', include: [
                     { model: this.Attribute, as: 'attributes', attributes: ['id', 'name', 'type'] },
                 ], attributes: ['id', 'name', 'nameAttribute', 'deleted'] }

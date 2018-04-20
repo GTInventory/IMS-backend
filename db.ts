@@ -49,6 +49,23 @@ export default class Db {
     insertItem = (item: any) =>
         this.Item.create(item)
 
+    insertItems = (items: any[]) =>
+        Promise.all(
+            items.map(item => 
+                this.insertItem(item).then(itemO => 
+                    this.insertAttributeInstances(
+                        item.attributes.map(attr => {
+                            return {
+                                attributeId: attr.attributeId,
+                                value: attr.value,
+                                itemId: itemO.id
+                            }
+                        })
+                    ).thenReturn(itemO)
+                )
+            )
+        )
+
     updateItem = (id: number, item: any) => // TODO: figure out if this is actually useful
         this.Item.findOne({
             where: {
@@ -195,6 +212,9 @@ export default class Db {
     insertAttributeInstance = (attributeInstance: any) =>
         this.AttributeInstance.create(attributeInstance)
 
+    insertAttributeInstances = (attributeInstances: any[]) =>
+        this.AttributeInstance.bulkCreate(attributeInstances)
+
     checkAttributesForUniqueness = (attributes: any[]) =>
         this.AttributeInstance.findOne({
             where: {
@@ -263,6 +283,9 @@ export default class Db {
                 type: Sequelize.STRING,
                 defaultValue: ""
             },
+        },
+        {
+            timestamps: false
         });
 
         this.Type = this.sequelize.define('type', {
@@ -333,6 +356,8 @@ export default class Db {
                 type: Sequelize.BOOLEAN,
                 defaultValue: false
             }
+        }, {
+            timestamps: false
         })
 
         this.Attribute.belongsToMany(this.Type, { 
@@ -348,7 +373,7 @@ export default class Db {
 
             // Definition of standard relations to include with requests.
         this.ITEM_INCLUDE = [
-            {model: this.AttributeInstance, as: 'attributes', attributes: ['value', 'attributeId', 'updatedAt']},
+            {model: this.AttributeInstance, as: 'attributes', attributes: ['value', 'attributeId']},
             {model: this.Type, as: 'type', include: [
                 {model: this.Attribute, as: 'attributes', attributes: ['id', 'name', 'type']},
             ], attributes: ['id', 'name', 'nameAttribute', 'deleted']}

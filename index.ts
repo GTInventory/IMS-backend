@@ -11,7 +11,9 @@ const db = new Db(process.env.DATABASE_URL || '')
 const controller = new Controller(db)
 
 app.use(morgan('combined')) // Apache log handler
-app.use(bodyParser.json())
+app.use(bodyParser.json({
+    limit: '100mb'
+}))
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*') // TODO: lock this down when we know where frontend will live
     res.header('Access-Control-Allow-Headers', 'Content-Type')
@@ -33,8 +35,8 @@ app.post('/type/:id(\\d+)/delete', controller.deleteType)
 
 app.get('/item', controller.paginationMiddleware, controller.getItems)
 app.get('/item/:id(\\d+)', controller.getItem)
-app.post('/item/multi', controller.postItems)
 app.post('/item', controller.postItem)
+app.post('/item/multi', controller.postItems)
 app.post('/item/:id(\\d+)', controller.updateItem)
 app.post('/item/:id(\\d+)/delete', controller.deleteItem)
 

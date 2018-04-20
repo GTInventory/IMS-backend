@@ -11,7 +11,9 @@ if (!process.env.DATABASE_URL)
 var db = new db_1.default(process.env.DATABASE_URL || '');
 var controller = new controller_1.default(db);
 app.use(morgan('combined')); // Apache log handler
-app.use(bodyParser.json());
+app.use(bodyParser.json({
+    limit: '100mb'
+}));
 app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Origin', '*'); // TODO: lock this down when we know where frontend will live
     res.header('Access-Control-Allow-Headers', 'Content-Type');
@@ -30,8 +32,8 @@ app.post('/type/:id(\\d+)/attribute', controller.postTypeAttribute);
 app.post('/type/:id(\\d+)/delete', controller.deleteType);
 app.get('/item', controller.paginationMiddleware, controller.getItems);
 app.get('/item/:id(\\d+)', controller.getItem);
-app.post('/item/multi', controller.postItems);
 app.post('/item', controller.postItem);
+app.post('/item/multi', controller.postItems);
 app.post('/item/:id(\\d+)', controller.updateItem);
 app.post('/item/:id(\\d+)/delete', controller.deleteItem);
 app.use(function (req, res, next) {
