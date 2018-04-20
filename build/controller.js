@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var authorizer_1 = require("./authorizer");
 var bluebird_1 = require("bluebird");
-var DEFAULT_LIMIT = 50; // Default # of items to return
+var DEFAULT_LIMIT = 20; // Default # of items to return
 var MAX_LIMIT = 1000; // Maximum permissible limit
 /**
  * Fulfills incoming router requests.

@@ -17,7 +17,11 @@ export default class Db {
     private TYPE_INCLUDE : any
 
     constructor(connString: string) {
-        this.sequelize = new Sequelize(connString)
+        this.sequelize = new Sequelize(connString, {
+            pool: {
+                max: 3
+            }
+        })
         this._initializeModels()
         this.sequelize.sync().then((_) => {
             //this.sequelize.sync({force: true})

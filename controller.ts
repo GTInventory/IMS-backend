@@ -3,7 +3,7 @@ import { Request, Response } from 'express'
 import { Authorizer, Permission } from './authorizer'
 import { Promise } from 'bluebird';
 
-const DEFAULT_LIMIT = 50; // Default # of items to return
+const DEFAULT_LIMIT = 20; // Default # of items to return
 const MAX_LIMIT = 1000; // Maximum permissible limit
 
 /**

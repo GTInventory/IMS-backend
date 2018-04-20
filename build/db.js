@@ -213,7 +213,11 @@ var Db = /** @class */ (function () {
             }).thenReturn(function (attr) { return !attr; });
             var _a;
         };
-        this.sequelize = new Sequelize(connString);
+        this.sequelize = new Sequelize(connString, {
+            pool: {
+                max: 3
+            }
+        });
         this._initializeModels();
         this.sequelize.sync().then(function (_) {
             //this.sequelize.sync({force: true})
