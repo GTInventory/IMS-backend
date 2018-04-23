@@ -78,6 +78,9 @@ Key | Type | Description
 
 ### Running the backend
 
+Requirements: NodeJS, PostgreSQL server and database
+Tested with: Node v8.9.4, PostgreSQL v10.3.
+
 1. Clone this repository.
 2. Run `npm install` to install dependencies.
 3. Set the ```DATABASE_URL``` environment variable to a PostgreSQL connection URL. The tables will be created automatically if they don't already exist.
