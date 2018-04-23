@@ -8,16 +8,21 @@ var bluebird_1 = require("bluebird");
 var Db = /** @class */ (function () {
     function Db(connString) {
         var _this = this;
-        this.getAllItems = function (offset, limit) {
+        this.getAllItems = function (offset, limit, typeId) {
             return _this.Item.findAll({
                 where: {
-                    deleted: false
+                    deleted: false,
+                    typeId: (typeId ? parseInt(typeId.toString()) : (_a = {}, _a[Sequelize.Op.not] = 0, _a))
                 },
                 offset: offset,
                 limit: limit,
-                order: [['id', 'ASC']],
-                include: _this.ITEM_INCLUDE
+                order: [
+                    ['typeId', 'ASC'],
+                    ['id', 'ASC']
+                ],
+                include: _this.ITEM_SEARCH_INCLUDE
             });
+            var _a;
         };
         this.getItemById = function (id) {
             return _this.Item.findOne({
@@ -54,7 +59,7 @@ var Db = /** @class */ (function () {
                 old.update(item);
             });
         };
-        this.searchItemsByAttributes = function (q, offset, limit) {
+        this.searchItemsByAttributes = function (q, offset, limit, typeId) {
             // First we use a raw query to find the applicable IDs.
             // Then we trust Sequelize to make an efficient query based on that
             // and pull in related data into models.
@@ -62,15 +67,17 @@ var Db = /** @class */ (function () {
                 + 'FROM items i, "attributeInstances" ai '
                 + 'RIGHT JOIN attributes AS a ON ai."attributeId" = a.id '
                 + 'WHERE ai."itemId" = i.id AND ai.value ILIKE $q AND i.deleted = false '
+                + (typeId ? ' AND i."typeId" = $typeid ' : '')
                 + "AND (a.type = 'DateTime' OR a.type = 'String' OR a.type = 'Enum' OR a.type = 'TextBox') "
                 + 'GROUP BY i.id '
-                + 'ORDER BY i.id '
+                + 'ORDER BY i."typeId", i.id '
                 + "LIMIT $limit OFFSET $offset;", {
                 type: Sequelize.QueryTypes.SELECT,
                 bind: {
                     q: '%' + q + '%',
                     limit: parseInt(limit.toString()),
-                    offset: parseInt(offset.toString())
+                    offset: parseInt(offset.toString()),
+                    typeid: (typeId ? parseInt(typeId.toString()) : undefined)
                 },
             }).then(function (items) {
                 return items.length == 0 ? bluebird_1.Promise.resolve([]) : _this.Item.findAll({
@@ -83,7 +90,7 @@ var Db = /** @class */ (function () {
                     order: [['id', 'ASC']],
                     limit: limit,
                     offset: offset,
-                    include: _this.ITEM_INCLUDE
+                    include: _this.ITEM_SEARCH_INCLUDE
                 });
                 var _a;
             });
@@ -361,6 +368,10 @@ var Db = /** @class */ (function () {
         this.AttributeInstance.belongsTo(this.Item);
         this.AttributeInstance.belongsTo(this.Attribute);
         // Definition of standard relations to include with requests.
+        this.ITEM_SEARCH_INCLUDE = [
+            { model: this.Type, as: 'type', attributes: ['id', 'name', 'nameAttribute'] },
+            { model: this.AttributeInstance, as: 'attributes', attributes: ['value', 'attributeId'] }
+        ];
         this.ITEM_INCLUDE = [
             { model: this.AttributeInstance, as: 'attributes', attributes: ['value', 'attributeId'] },
             { model: this.Type, as: 'type', include: [

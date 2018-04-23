@@ -124,12 +124,12 @@ var Controller = /** @class */ (function () {
         /// Equipment/Item Operations
         this.getItems = function (req, res) {
             if (req.query.q) {
-                _this.db.searchItemsByAttributes(req.query.q, req.query.start, req.query.limit).then(function (items) {
+                _this.db.searchItemsByAttributes(req.query.q, req.query.start, req.query.limit, req.query.typeId).then(function (items) {
                     _this.sendResponse(res, items);
                 });
             }
             else {
-                _this.db.getAllItems(req.query.start, req.query.limit).then(function (items) { return _this.sendResponse(res, items); });
+                _this.db.getAllItems(req.query.start, req.query.limit, req.query.typeId).then(function (items) { return _this.sendResponse(res, items); });
             }
         };
         this.getItem = function (req, res) {

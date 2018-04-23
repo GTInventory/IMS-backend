@@ -123,11 +123,11 @@ export default class Controller {
 
     getItems = (req: Request, res: Response) => {
         if (req.query.q) {
-            this.db.searchItemsByAttributes(req.query.q, req.query.start, req.query.limit).then((items) => {
+            this.db.searchItemsByAttributes(req.query.q, req.query.start, req.query.limit, req.query.typeId).then((items) => {
                 this.sendResponse(res, items);
             })
         } else {
-            this.db.getAllItems(req.query.start, req.query.limit).then((items) => this.sendResponse(res, items))
+            this.db.getAllItems(req.query.start, req.query.limit, req.query.typeId).then((items) => this.sendResponse(res, items))
         }
     }
 

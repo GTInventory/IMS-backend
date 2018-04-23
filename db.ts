@@ -13,8 +13,9 @@ export default class Db {
     private Attribute: Sequelize.Model<any, any>
     private Type: Sequelize.Model<any, any>
     private Item: Sequelize.Model<any, any>
-    private ITEM_INCLUDE : any
-    private TYPE_INCLUDE : any
+    private ITEM_INCLUDE : Sequelize.IncludeOptions[]
+    private TYPE_INCLUDE : Sequelize.IncludeOptions[]
+    private ITEM_SEARCH_INCLUDE : Sequelize.IncludeOptions[]
 
     constructor(connString: string) {
         this.sequelize = new Sequelize(connString, {
@@ -30,15 +31,19 @@ export default class Db {
         })
     }
 
-    getAllItems = (offset: number, limit: number) =>
+    getAllItems = (offset: number, limit: number, typeId: number) =>
         this.Item.findAll({
             where: {
-                deleted: false
+                deleted: false,
+                typeId: (typeId ? parseInt(typeId.toString()) : {[Sequelize.Op.not]: 0})
             },
             offset,
             limit,
-            order: [['id', 'ASC']],
-            include: this.ITEM_INCLUDE
+            order: [
+                ['typeId', 'ASC'],
+                ['id', 'ASC']
+            ],
+            include: this.ITEM_SEARCH_INCLUDE
         })
 
     getItemById = (id: number) =>
@@ -80,7 +85,7 @@ export default class Db {
             old.update(item)
         })
         
-    searchItemsByAttributes = (q: string, offset: number, limit: number) =>
+    searchItemsByAttributes = (q: string, offset: number, limit: number, typeId: number) =>
         // First we use a raw query to find the applicable IDs.
         // Then we trust Sequelize to make an efficient query based on that
         // and pull in related data into models.
@@ -88,15 +93,17 @@ export default class Db {
             + 'FROM items i, "attributeInstances" ai '
             + 'RIGHT JOIN attributes AS a ON ai."attributeId" = a.id '
             + 'WHERE ai."itemId" = i.id AND ai.value ILIKE $q AND i.deleted = false '
+            + (typeId ? ' AND i."typeId" = $typeid ' : '')
             + "AND (a.type = 'DateTime' OR a.type = 'String' OR a.type = 'Enum' OR a.type = 'TextBox') "
             + 'GROUP BY i.id '
-            + 'ORDER BY i.id '
+            + 'ORDER BY i."typeId", i.id '
             + "LIMIT $limit OFFSET $offset;", { 
                 type: Sequelize.QueryTypes.SELECT,
                 bind: {
                     q: '%' + q + '%',
                     limit: parseInt(limit.toString()),
-                    offset: parseInt(offset.toString())
+                    offset: parseInt(offset.toString()),
+                    typeid: (typeId ? parseInt(typeId.toString()) : undefined)
                 },
             }).then((items) => items.length == 0? Promise.resolve([]) : this.Item.findAll({
                 where: {
@@ -108,7 +115,7 @@ export default class Db {
                 order: [['id', 'ASC']],
                 limit,
                 offset,
-                include: this.ITEM_INCLUDE
+                include: this.ITEM_SEARCH_INCLUDE
             }))
 
     getAvailableTypes = (offset: number, limit: number) =>
@@ -376,6 +383,10 @@ export default class Db {
         this.AttributeInstance.belongsTo(this.Attribute)
 
             // Definition of standard relations to include with requests.
+        this.ITEM_SEARCH_INCLUDE = [
+            {model: this.Type, as: 'type', attributes: ['id', 'name', 'nameAttribute']},
+            {model: this.AttributeInstance, as: 'attributes', attributes: ['value', 'attributeId']}
+        ];
         this.ITEM_INCLUDE = [
             {model: this.AttributeInstance, as: 'attributes', attributes: ['value', 'attributeId']},
             {model: this.Type, as: 'type', include: [
