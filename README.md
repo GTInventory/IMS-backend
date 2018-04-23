@@ -7,9 +7,11 @@ Backend services for the GT Inventory Management System.
 
 The test API is available at https://ims-backend.mybluemix.net/. All requests are JSON-based.
 
-The API is documented at https://documenter.getpostman.com/view/3796309/ims-backend/RVg2B95p.
+The API requests are fully documented at https://documenter.getpostman.com/view/3796309/ims-backend/RVg2B95p.
 
 #### Data Types
+
+These are the data types contained in the backend's database
 
 ##### Attribute
 
@@ -74,7 +76,16 @@ Key | Type | Description
 `uniqueForType` | `bool` | Should new instances of this AttributeType be unique across all instances of this type? Note: If the Type's `uniqueGlobally` attribute is `true`, global uniqueness will be checked regardless of this value.
 
 
-### Contributing
+### Running the backend
+
+1. Clone this repository.
+2. Run `npm install` to install dependencies.
+3. Set the ```DATABASE_URL``` environment variable to a PostgreSQL connection URL. The tables will be created automatically if they don't already exist.
+4. Run `npm start` to start the server.
+
+Now the server should be running. By default, it listens on all interfaces using port 8080. The port can be configured through the ```PORT``` environment variable.
+
+### Developing
 
 To install the dependencies, run 
 
@@ -87,6 +98,6 @@ Now you should be able to run ```tsc -w``` to regenerate the JS files in ```buil
 
 Use ```npm start``` to start running ```build/index.js```. 
 
-Use ```npm run-script watch``` to get TypeScript to transpile your .ts files automatically when they change.
+Use ```npm run-script watch``` to get TypeScript to transpile your .ts files automatically when they change. You'll need to transpile your TypeScript to the JavaScript every time you make a change.
 
 Note: the backend expects a PostgreSQL database connection URL to be present in the ```DATABASE_URL``` environment variable in order to establish a connection.
