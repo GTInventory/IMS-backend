@@ -3,6 +3,50 @@ IMS-backend
 
 Backend services for the GT Inventory Management System.
 
+### Release Notes
+#### Features
+- Back end database support for creating and editing attributes
+- Back end database support for creating and editing equipment types
+- Back end database support for creating and editing equipment
+- Back end database support for simple text search across instances
+- Back end database support for soft deletion of equipment, equipment types, and attributes
+- Web-facing API that can be used to perform all back end functions
+#### Future Implementation
+- Versioning
+
+### Installation Guide
+Requirements: [NodeJS]("https://nodejs.org/en/"), [PostgreSQL server and database]("https://www.postgresql.org/docs/9.3/static/tutorial-install.html")
+
+Tested with: Node v8.9.4, PostgreSQL v10.3.
+
+#### Running the web server
+
+1. Clone this repository.
+2. Run `npm install` to install dependencies.
+3. Set the ```DATABASE_URL``` environment variable to a PostgreSQL connection URL. The tables will be created automatically if they don't already exist.
+4. Run `npm start` to start the server.
+
+Now the server should be running. By default, it listens on all interfaces using port 8080. The port can be configured through the ```PORT``` environment variable.
+
+#### Developing
+
+To install the dependencies, run 
+
+```
+npm install -g typescript
+npm install
+```
+
+Now you should be able to run ```tsc -w``` to regenerate the JS files in ```build/```. The ```.ts``` files are transpiled to JavaScript in ```build/```. 
+
+Use ```npm start``` to start running ```build/index.js```. 
+
+Use ```npm run-script watch``` to get TypeScript to transpile your .ts files automatically when they change. You'll need to transpile your TypeScript to the JavaScript every time you make a change.
+
+Note: the backend expects a PostgreSQL database connection URL to be present in the ```DATABASE_URL``` environment variable in order to establish a connection.
+
+
+
 ### Using the API
 
 The test API is available at https://ims-backend.mybluemix.net/. All requests are JSON-based.
@@ -74,33 +118,3 @@ Key | Type | Description
 `deleted` | `bool` | Is this AttributeType still a usable relation?
 `required` | `string` | One of `('Required', 'Suggested', 'Optional')`. If it is Required, attempts to pass an empty value for this Attribute will be rejected. If it is Suggested, it will be emphasized in the UI to indicate users should enter data. If it is Optional, no special treatment is done. Note: In data transfer, this is represented as a string for ease of parsing. However, in the database, it is stored as a Postgres enum type.
 `uniqueForType` | `bool` | Should new instances of this AttributeType be unique across all instances of this type? Note: If the Type's `uniqueGlobally` attribute is `true`, global uniqueness will be checked regardless of this value.
-
-
-### Running the backend
-
-Requirements: NodeJS, PostgreSQL server and database
-Tested with: Node v8.9.4, PostgreSQL v10.3.
-
-1. Clone this repository.
-2. Run `npm install` to install dependencies.
-3. Set the ```DATABASE_URL``` environment variable to a PostgreSQL connection URL. The tables will be created automatically if they don't already exist.
-4. Run `npm start` to start the server.
-
-Now the server should be running. By default, it listens on all interfaces using port 8080. The port can be configured through the ```PORT``` environment variable.
-
-### Developing
-
-To install the dependencies, run 
-
-```
-npm install -g typescript
-npm install
-```
-
-Now you should be able to run ```tsc -w``` to regenerate the JS files in ```build/```. The ```.ts``` files are transpiled to JavaScript in ```build/```. 
-
-Use ```npm start``` to start running ```build/index.js```. 
-
-Use ```npm run-script watch``` to get TypeScript to transpile your .ts files automatically when they change. You'll need to transpile your TypeScript to the JavaScript every time you make a change.
-
-Note: the backend expects a PostgreSQL database connection URL to be present in the ```DATABASE_URL``` environment variable in order to establish a connection.
